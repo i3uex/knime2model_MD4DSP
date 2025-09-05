@@ -20,20 +20,19 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='marital-status', origin_function="Row Filter (deprecated)")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_types_as_string(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', expected_type=DataType.STRING, origin_function="Row Filter (deprecated)")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, min_value=0.0, max_value=1.0, field='marital-status', origin_function="Row Filter (deprecated)")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, decimal_sep='.',  field='marital-status', origin_function="Row Filter (deprecated)")
+			
 	
 	missing_values_rowFilterMissing_PRE_valueRange=[]
 	if contract_pre_post.check_missing_range(belong_op=Belong(0), data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', 
@@ -50,6 +49,7 @@ def generateWorkflow():
 		print('POSTCONDITION Row Filter (deprecated)(marital-status) MissingValues:[] VALIDATED')
 	else:
 		print('POSTCONDITION Row Filter (deprecated)(marital-status) MissingValues:[] NOT VALIDATED')
+	
 	
 	
 	
@@ -74,7 +74,6 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
 	list_invalid=['Never-married']
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, 
@@ -82,12 +81,13 @@ def generateWorkflow():
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_types_as_string(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', expected_type=DataType.STRING, origin_function="Row Filter (deprecated)")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, min_value=9.0, max_value=202.0, field='marital-status', origin_function="Row Filter (deprecated)")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, decimal_sep='.',  field='marital-status', origin_function="Row Filter (deprecated)")
+			
 	
 	if contract_pre_post.check_fix_value_range(value='Never-married', is_substring=False, data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, belong_op=Belong(0), field='marital-status',
 									quant_abs=None, quant_rel=None, quant_op=None, origin_function="Row Filter (deprecated)"):
@@ -116,6 +116,7 @@ def generateWorkflow():
 		print('INVARIANT Row Filter (deprecated)(marital-status) FilterType:INCLUDE FixValueList:[Never-married] NOT VALIDATED')
 	
 	
+	
 	#-----------------New DataProcessing-----------------
 	rowFilterRange_age__input_dataDictionary_df=pd.read_parquet('/wf_validation_python/data/output/rowFilterPrimitive_output_dataDictionary.parquet')
 
@@ -126,28 +127,27 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterRange_age__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='age', origin_function="Row Filter (deprecated)")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_types_as_string(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', expected_type=DataType.STRING, origin_function="Row Filter (deprecated)")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterRange_age__input_dataDictionary_df, min_value=20.0, max_value=40.0, field='age', origin_function="Row Filter (deprecated)")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterRange_age__input_dataDictionary_df, field='age', origin_function="Row Filter (deprecated)")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterRange_age__input_dataDictionary_df, decimal_sep='.',  field='age', origin_function="Row Filter (deprecated)")
+			
 	
-	if contract_pre_post.check_interval_range_float(left_margin=20.0, right_margin=40.0, data_dictionary=rowFilterRange_age__input_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=20.0, right_margin=40.0, data_dictionary=rowFilterRange_age__input_dataDictionary_df,
 	                                	closure_type=Closure(2), belong_op=Belong(0), field='age', origin_function="Row Filter (deprecated)"):
 		print('PRECONDITION Row Filter (deprecated)(age) Interval:[20.0, 40.0) VALIDATED')
 	else:
 		print('PRECONDITION Row Filter (deprecated)(age) Interval:[20.0, 40.0) NOT VALIDATED')
 	
-	if contract_pre_post.check_interval_range_float(left_margin=20.0, right_margin=40.0, data_dictionary=rowFilterRange_age__output_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=20.0, right_margin=40.0, data_dictionary=rowFilterRange_age__output_dataDictionary_df,
 	                                	closure_type=Closure(3), belong_op=Belong(0), field='age', origin_function="Row Filter (deprecated)"):
 		print('POSTCONDITION Row Filter (deprecated)(age) Interval:[20.0, 40.0] VALIDATED')
 	else:
@@ -169,6 +169,7 @@ def generateWorkflow():
 		print('INVARIANT Row Filter (deprecated)(age) FilterType:INCLUDE LeftMarginList:[20.0] RightMarginList:[40.0] ClosureTypeList:[Closure.closedClosed] VALIDATED')
 	else:
 		print('INVARIANT Row Filter (deprecated)(age) FilterType:INCLUDE LeftMarginList:[20.0] RightMarginList:[40.0] ClosureTypeList:[Closure.closedClosed] NOT VALIDATED')
+	
 	
 	
 

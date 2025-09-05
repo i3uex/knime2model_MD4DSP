@@ -17,33 +17,31 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Latitude', origin_function="Math Formula")
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Altitude', origin_function="Math Formula")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Latitude', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, decimal_sep='.',  field='Latitude', origin_function="Math Formula")
+			
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Altitude', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, decimal_sep='.',  field='Altitude', origin_function="Math Formula")
+			
 	
 	missing_values_mathOperation_PRE_valueRange=[]
 	if contract_pre_post.check_missing_range(belong_op=Belong(0), data_dictionary=mathOperation_Difference_in_Latitude_Altitude__input_dataDictionary_df, field='Latitude', 
@@ -92,6 +90,7 @@ def generateWorkflow():
 		print('INVARIANT Math Formula(Difference in Latitude/Altitude) substract(Latitude, Altitude, ) VALIDATED')
 	else:
 		print('INVARIANT Math FormulaDifference in Latitude/Altitude substract(Latitude, Altitude, ) NOT VALIDATED')
+	
 	
 	
 	

@@ -15,20 +15,19 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=binner_Longitude__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Longitude', origin_function="Rule Engine")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_types_as_string(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', expected_type=DataType.INTEGER, origin_function="Rule Engine")
-	data_smells.check_special_character_spacing(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_suspect_precision(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_date_as_datetime(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_suspect_distribution(data_dictionary=binner_Longitude__input_dataDictionary_df, min_value=0.0, max_value=8.0, field='Longitude', origin_function="Rule Engine")
+	data_smells.check_intermingled_data_type(data_dictionary=binner_Longitude__input_dataDictionary_df, field='Longitude', origin_function="Rule Engine")
 	data_smells.check_separating_consistency(data_dictionary=binner_Longitude__input_dataDictionary_df, decimal_sep='.',  field='Longitude', origin_function="Rule Engine")
+			
 	
 
 	binner_Longitude__input_dataDictionary_transformed=binner_Longitude__input_dataDictionary_df.copy()

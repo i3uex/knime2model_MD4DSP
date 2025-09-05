@@ -15,20 +15,19 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Latitude', origin_function="Row Filter")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_types_as_string(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', expected_type=DataType.STRING, origin_function="Row Filter")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, min_value=10.0, max_value=1.0E9, field='Latitude', origin_function="Row Filter")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, field='Latitude', origin_function="Row Filter")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterRange_Latitude__input_dataDictionary_df, decimal_sep='.',  field='Latitude', origin_function="Row Filter")
+			
 	
 
 	rowFilterRange_Latitude__input_dataDictionary_transformed=rowFilterRange_Latitude__input_dataDictionary_df.copy()

@@ -17,22 +17,21 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Altitude', origin_function="Row Filter")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_types_as_string(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', expected_type=DataType.STRING, origin_function="Row Filter")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, min_value=1000.0, max_value=1.0E9, field='Altitude', origin_function="Row Filter")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, field='Altitude', origin_function="Row Filter")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df, decimal_sep='.',  field='Altitude', origin_function="Row Filter")
+			
 	
-	if contract_pre_post.check_interval_range_float(left_margin=1000.0, right_margin=1.0E9, data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=1000.0, right_margin=1.0E9, data_dictionary=rowFilterRange_Altitude__input_dataDictionary_df,
 	                                	closure_type=Closure(2), belong_op=Belong(0), field='Altitude', origin_function="Row Filter"):
 		print('PRECONDITION Row Filter(Altitude) Interval:[1000.0, 1.0E9) VALIDATED')
 	else:
@@ -54,7 +53,7 @@ def generateWorkflow():
 	rowFilterRange_Altitude__output_dataDictionary_df.to_parquet('/wf_validation_python/data/output/rowFilterRange_output_dataDictionary.parquet')
 	rowFilterRange_Altitude__output_dataDictionary_df=pd.read_parquet('/wf_validation_python/data/output/rowFilterRange_output_dataDictionary.parquet')
 	
-	if contract_pre_post.check_interval_range_float(left_margin=1000.0, right_margin=1.0E9, data_dictionary=rowFilterRange_Altitude__output_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=1000.0, right_margin=1.0E9, data_dictionary=rowFilterRange_Altitude__output_dataDictionary_df,
 	                                	closure_type=Closure(3), belong_op=Belong(0), field='Altitude', origin_function="Row Filter"):
 		print('POSTCONDITION Row Filter(Altitude) Interval:[1000.0, 1.0E9] VALIDATED')
 	else:
@@ -76,6 +75,7 @@ def generateWorkflow():
 		print('INVARIANT Row Filter(Altitude) FilterType:INCLUDE LeftMarginList:[1000.0] RightMarginList:[1.0E9] ClosureTypeList:[Closure.closedClosed] VALIDATED')
 	else:
 		print('INVARIANT Row Filter(Altitude) FilterType:INCLUDE LeftMarginList:[1000.0] RightMarginList:[1.0E9] ClosureTypeList:[Closure.closedClosed] NOT VALIDATED')
+	
 	
 	
 

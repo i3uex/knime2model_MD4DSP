@@ -21,19 +21,25 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=columnFilter_Name__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Name', origin_function="Column Filter")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
 	data_smells.check_types_as_string(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', expected_type=DataType.STRING, origin_function="Column Filter")
-	data_smells.check_special_character_spacing(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
 	data_smells.check_suspect_precision(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
 	data_smells.check_date_as_datetime(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_number_string_size(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_special_character_spacing(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_string_casing(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_intermingled_data_type(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_contracted_text(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_abbreviation_consistency(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_syntactic_synonym(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
+	data_smells.check_ambiguous_value(data_dictionary=columnFilter_Name__input_dataDictionary_df, field='Name', origin_function="Column Filter")
 	data_smells.check_separating_consistency(data_dictionary=columnFilter_Name__input_dataDictionary_df, decimal_sep='.',  field='Name', origin_function="Column Filter")
+			
 	
 	field_list_columnFilter_PRE_field_range=['Name']
 	if contract_pre_post.check_field_range(fields=field_list_columnFilter_PRE_field_range,
@@ -62,6 +68,7 @@ def generateWorkflow():
 		print('INVARIANT Column Filter(Name) VALIDATED')
 	else:
 		print('INVARIANT Column Filter(Name) NOT VALIDATED')
+	
 	
 	
 	

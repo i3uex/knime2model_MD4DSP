@@ -20,33 +20,31 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Change__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Latitude', origin_function="Math Formula")
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Change__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Longitude', origin_function="Math Formula")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Change__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Latitude', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Change__input_dataDictionary_df, decimal_sep='.',  field='Latitude', origin_function="Math Formula")
+			
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Change__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Longitude', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Longitude', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Change__input_dataDictionary_df, decimal_sep='.',  field='Longitude', origin_function="Math Formula")
+			
 	
 	missing_values_mathOperation_PRE_valueRange=[]
 	if contract_pre_post.check_missing_range(belong_op=Belong(0), data_dictionary=mathOperation_Change__input_dataDictionary_df, field='Latitude', 
@@ -85,6 +83,7 @@ def generateWorkflow():
 	
 	
 	
+	
 	#-----------------New DataProcessing-----------------
 	mathOperation_Percentage__input_dataDictionary_df=pd.read_parquet('/wf_validation_python/data/output/mathOperation1_output_dataDictionary.parquet')
 
@@ -95,33 +94,31 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Change', origin_function="Math Formula")
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Latitude', origin_function="Math Formula")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Change', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, decimal_sep='.',  field='Change', origin_function="Math Formula")
+			
 	data_smells.check_integer_as_floating_point(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_types_as_string(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', expected_type=DataType.DOUBLE, origin_function="Math Formula")
-	data_smells.check_special_character_spacing(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_precision(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_date_as_datetime(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_suspect_distribution(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, min_value=440.0, max_value=1600.0, field='Latitude', origin_function="Math Formula")
+	data_smells.check_intermingled_data_type(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Latitude', origin_function="Math Formula")
 	data_smells.check_separating_consistency(data_dictionary=mathOperation_Percentage__input_dataDictionary_df, decimal_sep='.',  field='Latitude', origin_function="Math Formula")
+			
 	
 	missing_values_mathOperation_PRE_valueRange=[]
 	if contract_pre_post.check_missing_range(belong_op=Belong(0), data_dictionary=mathOperation_Percentage__input_dataDictionary_df, field='Change', 
@@ -166,6 +163,7 @@ def generateWorkflow():
 	
 	
 	
+	
 	#-----------------New DataProcessing-----------------
 	binner_Change__input_dataDictionary_df=pd.read_parquet('/wf_validation_python/data/output/mathOperation2_output_dataDictionary.parquet')
 
@@ -176,28 +174,27 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=binner_Change__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='Change', origin_function="Rule Engine")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_types_as_string(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', expected_type=DataType.INTEGER, origin_function="Rule Engine")
-	data_smells.check_special_character_spacing(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_suspect_precision(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_date_as_datetime(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_suspect_distribution(data_dictionary=binner_Change__input_dataDictionary_df, min_value=0.0, max_value=8.0, field='Change', origin_function="Rule Engine")
+	data_smells.check_intermingled_data_type(data_dictionary=binner_Change__input_dataDictionary_df, field='Change', origin_function="Rule Engine")
 	data_smells.check_separating_consistency(data_dictionary=binner_Change__input_dataDictionary_df, decimal_sep='.',  field='Change', origin_function="Rule Engine")
+			
 	
-	if contract_pre_post.check_interval_range_float(left_margin=0.0, right_margin=1000.0, data_dictionary=binner_Change__input_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=0.0, right_margin=1000.0, data_dictionary=binner_Change__input_dataDictionary_df,
 	                                	closure_type=Closure(3), belong_op=Belong(0), field='Change', origin_function="Rule Engine"):
 		print('PRECONDITION Rule Engine(Change) Interval:[0.0, 1000.0] VALIDATED')
 	else:
 		print('PRECONDITION Rule Engine(Change) Interval:[0.0, 1000.0] NOT VALIDATED')
 	
-	if contract_pre_post.check_interval_range_float(left_margin=0.0, right_margin=1000.0, data_dictionary=binner_Change__output_dataDictionary_df,
+	if contract_pre_post.check_interval_range(left_margin=0.0, right_margin=1000.0, data_dictionary=binner_Change__output_dataDictionary_df,
 	                                	closure_type=Closure(0), belong_op=Belong(1), field='Increase/Decrease', origin_function="Rule Engine"):
 		print('POSTCONDITION Rule Engine(Increase/Decrease) Interval:(0.0, 1000.0) VALIDATED')
 	else:
@@ -226,6 +223,7 @@ def generateWorkflow():
 		print('INVARIANT Rule Engine(Change) Interval:(0.0, 1.0E9) FixValue:Increase VALIDATED')
 	else:
 		print('INVARIANT Rule Engine(Change) Interval:(0.0, 1.0E9) FixValue:Increase NOT VALIDATED')
+	
 	
 	
 	

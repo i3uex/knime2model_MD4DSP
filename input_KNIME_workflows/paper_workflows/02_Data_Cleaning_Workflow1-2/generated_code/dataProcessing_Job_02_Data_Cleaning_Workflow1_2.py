@@ -17,7 +17,6 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
 	list_invalid=['a*']
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, 
@@ -25,12 +24,13 @@ def generateWorkflow():
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_types_as_string(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', expected_type=DataType.STRING, origin_function="Row Filter")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, min_value=9.0, max_value=202.0, field='Name', origin_function="Row Filter")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, field='Name', origin_function="Row Filter")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, decimal_sep='.',  field='Name', origin_function="Row Filter")
+			
 	
 	if contract_pre_post.check_fix_value_range(value='a*', is_substring=False, data_dictionary=rowFilterPrimitive_Name__input_dataDictionary_df, belong_op=Belong(0), field='Name',
 									quant_abs=None, quant_rel=None, quant_op=None, origin_function="Row Filter"):
@@ -69,6 +69,7 @@ def generateWorkflow():
 		print('INVARIANT Row Filter(Name) FilterType:INCLUDE FixValueList:[a*] VALIDATED')
 	else:
 		print('INVARIANT Row Filter(Name) FilterType:INCLUDE FixValueList:[a*] NOT VALIDATED')
+	
 	
 	
 

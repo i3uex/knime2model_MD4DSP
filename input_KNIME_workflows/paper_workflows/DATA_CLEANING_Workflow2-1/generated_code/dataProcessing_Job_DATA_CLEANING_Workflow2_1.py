@@ -18,20 +18,19 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
-	list_invalid=[]
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, 
 														missing_invalid_list=[], common_missing_invalid_list=common_missing_list, field='marital-status', origin_function="Row Filter (deprecated)")
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_types_as_string(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', expected_type=DataType.STRING, origin_function="Row Filter (deprecated)")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, min_value=0.0, max_value=1.0, field='marital-status', origin_function="Row Filter (deprecated)")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, decimal_sep='.',  field='marital-status', origin_function="Row Filter (deprecated)")
+			
 	
 	missing_values_rowFilterMissing_PRE_valueRange=[]
 	if contract_pre_post.check_missing_range(belong_op=Belong(0), data_dictionary=rowFilterMissing_marital_status__input_dataDictionary_df, field='marital-status', 
@@ -62,6 +61,7 @@ def generateWorkflow():
 	
 	
 	
+	
 	cols_special_type_values_rowFilterMissing_marital_status__INV_condition={'marital-status':{'missing': []}}
 	
 	if contract_invariants.check_inv_filter_rows_special_values(data_dictionary_in=rowFilterMissing_marital_status__input_dataDictionary_df,
@@ -80,7 +80,6 @@ def generateWorkflow():
 	common_invalid_list=['inf', '-inf', 'nan']
 	common_missing_list=['', '?', '.','null','none','na']
 	
-	list_missing=[]
 	list_invalid=['Divorced']
 	
 	data_smells.check_missing_invalid_value_consistency(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, 
@@ -88,12 +87,13 @@ def generateWorkflow():
 	
 	data_smells.check_integer_as_floating_point(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_types_as_string(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', expected_type=DataType.STRING, origin_function="Row Filter (deprecated)")
-	data_smells.check_special_character_spacing(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_precision(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_date_as_datetime(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_ambiguous_datetime_format(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_suspect_distribution(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, min_value=9.0, max_value=202.0, field='marital-status', origin_function="Row Filter (deprecated)")
+	data_smells.check_intermingled_data_type(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, field='marital-status', origin_function="Row Filter (deprecated)")
 	data_smells.check_separating_consistency(data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, decimal_sep='.',  field='marital-status', origin_function="Row Filter (deprecated)")
+			
 	
 	if contract_pre_post.check_fix_value_range(value='Divorced', is_substring=False, data_dictionary=rowFilterPrimitive_marital_status__input_dataDictionary_df, belong_op=Belong(0), field='marital-status',
 									quant_abs=None, quant_rel=None, quant_op=None, origin_function="Row Filter (deprecated)"):
@@ -132,6 +132,7 @@ def generateWorkflow():
 		print('INVARIANT Row Filter (deprecated)(marital-status) FilterType:INCLUDE FixValueList:[Divorced] VALIDATED')
 	else:
 		print('INVARIANT Row Filter (deprecated)(marital-status) FilterType:INCLUDE FixValueList:[Divorced] NOT VALIDATED')
+	
 	
 	
 
