@@ -276,3 +276,18 @@ def json_to_xmi_workflow_with_templates(json_input_folder: str, workflow_filenam
             file.write(workflow_filled_content)
 
     return mapped_nodes, nodes_cont, mapped_nodes_info
+
+
+if __name__ == "__main__":
+    # Example usage
+    # Parameter to change for the json workflow to convert
+    workflow_filename = "01 Data Cleaning_Workflow2-1"
+
+    json_input_folder = "parsed_json_workflows"
+    xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
+
+    mapped_nodes, nodes_cont, mapped_nodes_info = json_to_xmi_workflow_with_templates(
+        json_input_folder, workflow_filename, xmi_output_folder, include_contracts=True)
+
+    print(f"Mapped nodes: {mapped_nodes}/{nodes_cont}")
+    print("Mapping details:", mapped_nodes_info)
