@@ -14,6 +14,19 @@ Este DSL cubre **100% de los workflows** analizados, incluyendo:
 - ✅ Workflow más completo: "Model data set with metanode" (806 líneas JSON, 4603 líneas XMI)
 - ✅ Todas las transformaciones de la librería MD4DSP
 - ✅ **Contratos completos** (Preconditions, Postconditions, Invariants) basados en XMI
+- ✅ **Especificación JSON detallada para contratos** (Sección 5.1) - Forward-compatible
+
+## ⚠️ Nota Importante sobre Contratos
+
+**Estado actual**: Los contratos en el DSL y JSON son una **especificación para trabajo futuro**.
+
+- El parser actual `json2workflow.py` **genera contratos automáticamente** basándose en el tipo de transformación
+- La sección `"contracts"` en JSON está **diseñada para ser forward-compatible**
+- Si creas JSONs manualmente con contratos, el parser actual los **ignorará**
+- Para que funcionen, necesitarás **modificar `json2workflow.py`** en el futuro
+- La estructura JSON está **completamente especificada y lista** para esta implementación futura
+
+**Ver Sección 5.1** para la especificación completa de cómo estructurar contratos en JSON.
 
 ---
 
@@ -391,7 +404,7 @@ workflow "Data Cleaning Pipeline" {
 source data = read_csv("/data/file.csv", ,)
 source data = read_csv("/data/file.csv", ;)
 source data = read_csv("/data/file.csv", "\t")
-source data = read_csv("/data/file.csv")  // comma por defecto
+source data = read_csv("/data/file.csv")  // coma por defecto
 ```
 
 #### File Reader (alternativa)
@@ -1631,6 +1644,76 @@ weird = map("My Column Name!") { ... } replace |> data
 | `input.Column` | `Contract:DataField` (input) | `<in xsi:type="Contract:DataField" dataField=".../@inputPort...">` |
 | `output.Column` | `Contract:DataField` (output) | `<out xsi:type="Contract:DataField" dataField=".../@outputPort...">` |
 
+### Estructura JSON Extendida con Contratos
+
+Para que el JSON sea parseable en el futuro, se añade una sección `"contracts"` al formato existente:
+
+```json
+{
+  "nodes": [
+    {
+      "id": 12,
+      "node_name": "String to Number",
+      "node_type": "org.knime.base.node.preproc.colconvert.stringtonumber2.StringToNumber2NodeFactory",
+      "parameters": { ... }
+    }
+  ],
+  "connections": [
+    {"sourceID": 1, "destID": 12}
+  ],
+  "contracts": {
+    "12": {
+      "preconditions": [
+        {
+          "name": "TERRITORY_castable",
+          "type": "value_range",
+          "field": "input",
+          "column": "TERRITORY",
+          "check": "castable_to",
+          "target_type": "Integer"
+        }
+      ],
+      "postconditions": [
+        {
+          "name": "TERRITORY_is_integer",
+          "type": "value_range",
+          "field": "output",
+          "column": "TERRITORY",
+          "check": "is_type",
+          "target_type": "Integer"
+        }
+      ],
+      "invariants": [
+        {
+          "name": "TERRITORY_no_special",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "TERRITORY",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            },
+            "then": {
+              "field": "output",
+              "column": "TERRITORY",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+**Notas importantes**:
+- Los contratos se indexan por `node_id` (string)
+- Cada nodo puede tener arrays de `preconditions`, `postconditions`, `invariants`
+- Los contratos actuales se generan automáticamente en `json2workflow.py`
+- Esta estructura está diseñada para trabajo futuro cuando se modifique el parser
+
 ### Flujo Completo: DSL → JSON → XMI
 
 ```
@@ -1646,10 +1729,10 @@ weird = map("My Column Name!") { ... } replace |> data
 │  }                                      │
 └──────────────┬──────────────────────────┘
                │ Compilación
-               │ (Parser DSL)
+               │ (Parser DSL → Futuro)
                ▼
 ┌─────────────────────────────────────────┐
-│  JSON INTERMEDIO                        │
+│  JSON INTERMEDIO CON CONTRATOS         │
 │                                         │
 │  {                                      │
 │    "nodes": [                           │
@@ -1664,11 +1747,29 @@ weird = map("My Column Name!") { ... } replace |> data
 │        }                                │
 │      }                                  │
 │    ],                                   │
-│    "connections": [...]                 │
+│    "connections": [...],                │
+│    "contracts": {                       │
+│      "12": {                            │
+│        "preconditions": [               │
+│          {                              │
+│            "name": "Age_castable",      │
+│            "type": "value_range",       │
+│            "field": "input",            │
+│            "column": "Age",             │
+│            "check": "castable_to",      │
+│            "target_type": "Integer"     │
+│          }                              │
+│        ],                               │
+│        "postconditions": [...],         │
+│        "invariants": [...]              │
+│      }                                  │
+│    }                                    │
 │  }                                      │
 └──────────────┬──────────────────────────┘
                │ Transformación
-               │ (json2workflow.py)
+               │ (json2workflow.py - FUTURO)
+               │ Actualmente: ignora "contracts"
+               │ Futuro: parsea y genera contratos
                ▼
 ┌─────────────────────────────────────────┐
 │  XMI (MD4DSP Workflow Model)           │
@@ -1719,9 +1820,460 @@ weird = map("My Column Name!") { ... } replace |> data
 
 Este flujo muestra cómo:
 1. El **DSL** se escribe de forma legible y concisa
-2. Se compila a **JSON intermedio** (formato actual del proyecto)
+2. Se compila a **JSON intermedio** (formato actual del proyecto + sección "contracts")
 3. Se transforma a **XMI** con contratos incluidos
 4. Se genera **código Python ejecutable** con validaciones
+
+---
+
+## 5.1. Especificación Detallada: Contratos en JSON
+
+Esta sección define **cómo estructurar contratos en JSON** para que sean parseables cuando se modifique `json2workflow.py`.
+
+### 5.1.1. Estructura General
+
+```json
+{
+  "nodes": [...],
+  "connections": [...],
+  "contracts": {
+    "<node_id>": {
+      "preconditions": [<Contract>, ...],
+      "postconditions": [<Contract>, ...],
+      "invariants": [<Contract>, ...]
+    }
+  }
+}
+```
+
+- `<node_id>`: String con el ID del nodo (e.g., `"12"`)
+- Cada nodo puede tener 0 o más contratos de cada tipo
+- Si un nodo no tiene contratos, puede omitirse de la sección `"contracts"`
+
+### 5.1.2. Tipo de Contrato: ValueRange
+
+**DSL**:
+```
+precondition "Age_castable" {
+    value_range(input.Age, castable_to Integer)
+}
+```
+
+**JSON**:
+```json
+{
+  "name": "Age_castable",
+  "type": "value_range",
+  "field": "input",
+  "column": "Age",
+  "check": "castable_to",
+  "target_type": "Integer"
+}
+```
+
+**Campos**:
+- `name`: Identificador del contrato
+- `type`: `"value_range"`
+- `field`: `"input"` o `"output"`
+- `column`: Nombre de la columna
+- `check`: `"castable_to"`, `"is_type"`, `"in_range"`, `"matches"`
+- `target_type`: `"Integer"`, `"Double"`, `"String"`, `"Boolean"` (si check es castable_to o is_type)
+- `range`: `{"lower": 0, "upper": 120}` (si check es in_range)
+- `values`: `["value1", "value2"]` (si check es matches)
+
+**Ejemplos adicionales**:
+
+```json
+// value_range con rango
+{
+  "name": "Age_in_valid_range",
+  "type": "value_range",
+  "field": "input",
+  "column": "Age",
+  "check": "in_range",
+  "range": {
+    "lower": 0,
+    "upper": 120,
+    "lower_inclusive": true,
+    "upper_inclusive": true
+  }
+}
+
+// value_range con valores específicos
+{
+  "name": "Status_valid_values",
+  "type": "value_range",
+  "field": "output",
+  "column": "Status",
+  "check": "matches",
+  "values": ["1", "0", "-1"]
+}
+```
+
+### 5.1.3. Tipo de Contrato: Condition (if-then)
+
+**DSL**:
+```
+invariant "Age_type_preserved" {
+    condition {
+        if input.Age belongs_to type Integer
+        then output.Age belongs_to type Integer
+    }
+}
+```
+
+**JSON**:
+```json
+{
+  "name": "Age_type_preserved",
+  "type": "condition",
+  "condition": {
+    "if": {
+      "field": "input",
+      "column": "Age",
+      "operator": "belongs_to",
+      "check": "type",
+      "target_type": "Integer"
+    },
+    "then": {
+      "field": "output",
+      "column": "Age",
+      "operator": "belongs_to",
+      "check": "type",
+      "target_type": "Integer"
+    }
+  }
+}
+```
+
+**Campos**:
+- `name`: Identificador del contrato
+- `type`: `"condition"`
+- `condition`: Objeto con `if` y `then`
+  - `if`: Cláusula condicional
+    - `field`: `"input"` o `"output"`
+    - `column`: Nombre de la columna
+    - `operator`: `"belongs_to"` o `"not_belongs_to"`
+    - `check`: `"type"`, `"special_values"`, `"value"`, `"range"`
+    - `target_type`: Tipo esperado (si check es "type")
+  - `then`: Resultado esperado (misma estructura que `if`)
+
+**Ejemplos adicionales**:
+
+```json
+// Condition con special_values
+{
+  "name": "no_special_preserved",
+  "type": "condition",
+  "condition": {
+    "if": {
+      "field": "input",
+      "column": "Income",
+      "operator": "not_belongs_to",
+      "check": "special_values"
+    },
+    "then": {
+      "field": "output",
+      "column": "Income",
+      "operator": "not_belongs_to",
+      "check": "special_values"
+    }
+  }
+}
+
+// Condition con valor específico
+{
+  "name": "positive_preserved",
+  "type": "condition",
+  "condition": {
+    "if": {
+      "field": "input",
+      "column": "Amount",
+      "operator": "belongs_to",
+      "check": "range",
+      "range": {"lower": 0, "upper": null}
+    },
+    "then": {
+      "field": "output",
+      "column": "Amount",
+      "operator": "belongs_to",
+      "check": "range",
+      "range": {"lower": 0, "upper": null}
+    }
+  }
+}
+```
+
+### 5.1.4. Tipo de Contrato: SpecialValue
+
+**DSL**:
+```
+postcondition "no_missing_Age" {
+    no_special_values(output.Age)
+}
+```
+
+**JSON**:
+```json
+{
+  "name": "no_missing_Age",
+  "type": "special_value",
+  "field": "output",
+  "column": "Age",
+  "check": "not_belongs_to",
+  "special_values": ["NA", "NaN", "null", "Inf", "-Inf"]
+}
+```
+
+**Campos**:
+- `name`: Identificador del contrato
+- `type`: `"special_value"`
+- `field`: `"input"` o `"output"`
+- `column`: Nombre de la columna
+- `check`: `"not_belongs_to"` (no tiene) o `"belongs_to"` (sí tiene)
+- `special_values`: Array de valores especiales a verificar
+
+**Ejemplo inverso** (verificar que SÍ hay valores especiales):
+
+```json
+{
+  "name": "has_missing_Income",
+  "type": "special_value",
+  "field": "input",
+  "column": "Income",
+  "check": "belongs_to",
+  "special_values": ["NA", "NaN", "null"]
+}
+```
+
+### 5.1.5. Tipo de Contrato: CastType
+
+**DSL**:
+```
+precondition "Status_is_castable" {
+    castable_to Integer(input.Status)
+}
+```
+
+**JSON**:
+```json
+{
+  "name": "Status_is_castable",
+  "type": "cast_type",
+  "field": "input",
+  "column": "Status",
+  "check": "castable_to",
+  "target_type": "Integer"
+}
+```
+
+**Campos**:
+- `name`: Identificador del contrato
+- `type`: `"cast_type"`
+- `field`: `"input"` o `"output"`
+- `column`: Nombre de la columna
+- `check`: `"castable_to"` o `"is_type"`
+- `target_type`: `"Integer"`, `"Double"`, `"String"`, `"Boolean"`
+
+**Ejemplo con is_type**:
+
+```json
+{
+  "name": "Age_is_integer",
+  "type": "cast_type",
+  "field": "output",
+  "column": "Age",
+  "check": "is_type",
+  "target_type": "Integer"
+}
+```
+
+### 5.1.6. Ejemplo Completo: Workflow con Contratos en JSON
+
+```json
+{
+  "nodes": [
+    {
+      "id": 1,
+      "node_name": "CSV Reader",
+      "node_type": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+      "parameters": {
+        "file_path": "/data/file.csv",
+        "column_delimiter": ","
+      }
+    },
+    {
+      "id": 12,
+      "node_name": "String to Number",
+      "node_type": "org.knime.base.node.preproc.colconvert.stringtonumber2.StringToNumber2NodeFactory",
+      "parameters": {
+        "decimal_separator": ".",
+        "in_columns": [
+          {"column_name": "TERRITORY", "column_type": "xstring"},
+          {"column_name": "Instate", "column_type": "xstring"}
+        ],
+        "out_columns": [
+          {"column_name": "TERRITORY", "column_type": "xstring"},
+          {"column_name": "Instate", "column_type": "xstring"}
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {"sourceID": 1, "destID": 12}
+  ],
+  "contracts": {
+    "12": {
+      "preconditions": [
+        {
+          "name": "TERRITORY_castable",
+          "type": "value_range",
+          "field": "input",
+          "column": "TERRITORY",
+          "check": "castable_to",
+          "target_type": "Integer"
+        },
+        {
+          "name": "Instate_castable",
+          "type": "value_range",
+          "field": "input",
+          "column": "Instate",
+          "check": "castable_to",
+          "target_type": "Integer"
+        }
+      ],
+      "postconditions": [
+        {
+          "name": "TERRITORY_is_integer",
+          "type": "cast_type",
+          "field": "output",
+          "column": "TERRITORY",
+          "check": "is_type",
+          "target_type": "Integer"
+        },
+        {
+          "name": "Instate_is_integer",
+          "type": "cast_type",
+          "field": "output",
+          "column": "Instate",
+          "check": "is_type",
+          "target_type": "Integer"
+        }
+      ],
+      "invariants": [
+        {
+          "name": "TERRITORY_no_special",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "TERRITORY",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            },
+            "then": {
+              "field": "output",
+              "column": "TERRITORY",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            }
+          }
+        },
+        {
+          "name": "Instate_no_special",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "Instate",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            },
+            "then": {
+              "field": "output",
+              "column": "Instate",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            }
+          }
+        },
+        {
+          "name": "TERRITORY_type_preserved",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "TERRITORY",
+              "operator": "belongs_to",
+              "check": "type",
+              "target_type": "Integer"
+            },
+            "then": {
+              "field": "output",
+              "column": "TERRITORY",
+              "operator": "belongs_to",
+              "check": "type",
+              "target_type": "Integer"
+            }
+          }
+        },
+        {
+          "name": "Instate_type_preserved",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "Instate",
+              "operator": "belongs_to",
+              "check": "type",
+              "target_type": "Integer"
+            },
+            "then": {
+              "field": "output",
+              "column": "Instate",
+              "operator": "belongs_to",
+              "check": "type",
+              "target_type": "Integer"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### 5.1.7. Mapeo JSON → XMI
+
+Cuando se modifique `json2workflow.py`, este sería el mapeo:
+
+| JSON Contract Type | XMI Contract Element |
+|-------------------|---------------------|
+| `"type": "value_range"` | `<contract xsi:type="Contract:ValueRange">` |
+| `"type": "condition"` | `<contract xsi:type="Contract:Condition">` |
+| `"type": "special_value"` | `<dataCondition xsi:type="Contract:SpecialValue">` |
+| `"type": "cast_type"` | `<value xsi:type="Contract:CastType">` |
+| `"field": "input"` | `<in xsi:type="Contract:DataField" dataField=".../@inputPort...">` |
+| `"field": "output"` | `<out xsi:type="Contract:DataField" dataField=".../@outputPort...">` |
+| `"operator": "belongs_to"` | `belongOp="BELONG"` |
+| `"operator": "not_belongs_to"` | `belongOp="NOTBELONG"` |
+| Precondition | `<contract name="..._PRECONDITION">` |
+| Postcondition | `<contract name="..._POSTCONDITION">` |
+| Invariant | `<contract name="..._INVARIANT">` |
+
+### 5.1.8. Nota sobre el Parser Actual
+
+**IMPORTANTE**: El parser actual `json2workflow.py`:
+- ✅ Lee `nodes` y `connections`
+- ✅ Genera contratos automáticamente basándose en el tipo de transformación
+- ❌ **IGNORA** la sección `"contracts"` si existe en el JSON
+
+Para que los contratos del JSON se usen:
+1. Modificar `json2workflow.py` para leer la sección `"contracts"`
+2. Por cada contrato en el JSON, generar el elemento XMI correspondiente
+3. Opcionalmente, deshabilitar la generación automática de contratos
+
+Esta estructura JSON está **diseñada para ser forward-compatible** con esta modificación futura.
 
 ---
 
@@ -2060,6 +2612,12 @@ final = bin(Age) { ... } as age_group |> imputed
   - 4 tipos de contratos: ValueRange, Condition, SpecialValue, CastType
   - Ejemplos completos de contratos en todas las transformaciones
   - Diagrama de flujo DSL → JSON → XMI → Python Code
+  - **Especificación JSON completa para contratos** (Sección 5.1)
+    - Estructura detallada de cada tipo de contrato en JSON
+    - Ejemplo completo de workflow con 8 contratos en formato JSON
+    - Mapeo JSON → XMI documentado
+    - Forward-compatible: JSON preparado para modificación futura de `json2workflow.py`
+    - Parser actual ignora contratos, pero estructura está lista para cuando se implemente
 
 ---
 
