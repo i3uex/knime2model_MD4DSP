@@ -30,336 +30,370 @@ Este DSL cubre **100% de los workflows** analizados, incluyendo:
 
 ---
 
-## 1. Gramática EBNF Completa
+## 1. Gramática Xtext Completa
 
-```ebnf
-(* ============================================ *)
-(* ESTRUCTURA PRINCIPAL DEL WORKFLOW            *)
-(* ============================================ *)
+```xtext
+grammar xtext.json.WorkflowDSL with org.eclipse.xtext.common.Terminals
 
-Workflow ::= "workflow" STRING "{" DataSource WorkflowBody "}"
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
-DataSource ::= "source" ID "=" DataReader
+generate workflowDSL "http://www.json.xtext/WorkflowDSL"
 
-DataReader ::= CSVReader | FileReader
+Workflow:
+    "workflow" name=STRING "{" source=DataSource body=WorkflowBody "}";
 
-CSVReader ::= "read_csv" "(" FilePath ("," Delimiter)? ")"
+DataSource:
+    "source" name=ID "=" reader=DataReader;
 
-FileReader ::= "read_file" "(" FilePath ")"
+DataReader:
+    CSVReader | FileReader;
 
-FilePath ::= STRING
+CSVReader:
+    "read_csv" "(" filePath=FilePath ("," delimiter=Delimiter)? ")";
 
-Delimiter ::= "," | ";" | "\t" | "|" | STRING
+FileReader:
+    "read_file" "(" filePath=FilePath ")";
 
-WorkflowBody ::= (Step)*
+FilePath:
+    path=STRING;
 
-Step ::= ID "=" Transformation ("|>" ID)? ContractBlock?
+Delimiter:
+    "," | ";" | "\t" | "|" | value=STRING;
 
-(* ============================================ *)
-(* CONTRATOS - PRECONDITIONS, POSTCONDITIONS, INVARIANTS *)
-(* ============================================ *)
+WorkflowBody:
+    steps+=Step*;
 
-ContractBlock ::= "contracts" "{" (Contract)* "}"
+Step:
+    name=ID "=" transformation=Transformation ("|>" target=ID)? contracts=ContractBlock?;
 
-Contract ::= Precondition | Postcondition | Invariant
+ContractBlock:
+    "contracts" "{" contracts+=Contract* "}";
 
-Precondition ::= "precondition" ContractName "{" ContractBody "}"
+Contract:
+    Precondition | Postcondition | Invariant;
 
-Postcondition ::= "postcondition" ContractName "{" ContractBody "}"
+Precondition:
+    "precondition" name=ContractName "{" body=ContractBody "}";
 
-Invariant ::= "invariant" ContractName "{" ContractBody "}"
+Postcondition:
+    "postcondition" name=ContractName "{" body=ContractBody "}";
 
-ContractName ::= STRING | ID
+Invariant:
+    "invariant" name=ContractName "{" body=ContractBody "}";
 
-ContractBody ::= ContractType
+ContractName:
+    name=STRING | name=ID;
 
-ContractType ::= ValueRangeContract
-               | ConditionContract
-               | SpecialValueContract
-               | CastTypeContract
+ContractBody:
+    type=ContractType;
 
-(* Value Range Contract *)
-ValueRangeContract ::= "value_range" "(" ContractField "," ContractValue ")"
+ContractType:
+    ValueRangeContract
+    | ConditionContract
+    | SpecialValueContract
+    | CastTypeContract;
 
-ContractField ::= "input" "." Column
-                | "output" "." Column
+ValueRangeContract:
+    "value_range" "(" field=ContractField "," value=ContractValue ")";
 
-ContractValue ::= "castable_to" Type
-                | "in_range" RangeBounds
-                | "matches" Value
+ContractField:
+    "input" "." column=Column
+    | "output" "." column=Column;
 
-Type ::= "Integer" | "Double" | "String" | "Boolean"
+ContractValue:
+    "castable_to" type=Type
+    | "in_range" bounds=RangeBounds
+    | "matches" value=Value;
 
-(* Condition Contract (if-then) *)
-ConditionContract ::= "condition" "{" IfClause ThenClause "}"
+Type:
+    "Integer" | "Double" | "String" | "Boolean";
 
-IfClause ::= "if" ContractField BelongOp DataCondition
+ConditionContract:
+    "condition" "{" ifClause=IfClause thenClause=ThenClause "}";
 
-ThenClause ::= "then" ContractField BelongOp DataResult
+IfClause:
+    "if" field=ContractField op=BelongOp condition=DataCondition;
 
-BelongOp ::= "belongs_to" | "not_belongs_to"
+ThenClause:
+    "then" field=ContractField op=BelongOp result=DataResult;
 
-DataCondition ::= SpecialValueCheck | CastTypeCheck | ValueCheck
+BelongOp:
+    "belongs_to" | "not_belongs_to";
 
-SpecialValueCheck ::= "special_values"
+DataCondition:
+    SpecialValueCheck | CastTypeCheck | ValueCheck;
 
-CastTypeCheck ::= "type" Type
+SpecialValueCheck:
+    "special_values";
 
-ValueCheck ::= "value" Value
+CastTypeCheck:
+    "type" type=Type;
 
-DataResult ::= SpecialValueCheck | CastTypeCheck | ValueCheck
+ValueCheck:
+    "value" value=Value;
 
-(* Special Value Contract *)
-SpecialValueContract ::= "no_special_values" "(" ContractField ")"
-                       | "has_special_values" "(" ContractField ")"
+DataResult:
+    SpecialValueCheck | CastTypeCheck | ValueCheck;
 
-(* Cast Type Contract *)
-CastTypeContract ::= "castable_to" Type "(" ContractField ")"
-                   | "is_type" Type "(" ContractField ")"
+SpecialValueContract:
+    "no_special_values" "(" field=ContractField ")"
+    | "has_special_values" "(" field=ContractField ")";
 
-(* ============================================ *)
-(* TRANSFORMACIONES DISPONIBLES                 *)
-(* ============================================ *)
+CastTypeContract:
+    "castable_to" type=Type "(" field=ContractField ")"
+    | "is_type" type=Type "(" field=ContractField ")";
 
-Transformation ::= RowFilter
-                 | ColumnFilter  
-                 | Mapping
-                 | MathOp
-                 | Binner
-                 | TypeConversion
-                 | Imputation
-                 | OutlierTreatment
-                 | Join
+Transformation:
+    RowFilter
+    | ColumnFilter  
+    | Mapping
+    | MathOp
+    | Binner
+    | TypeConversion
+    | Imputation
+    | OutlierTreatment
+    | Join;
 
-(* ============================================ *)
-(* FILTROS DE FILAS - 3 TIPOS                   *)
-(* ============================================ *)
+RowFilter:
+    "filter_rows" "{" condition=FilterCondition "}";
 
-RowFilter ::= "filter_rows" "{" FilterCondition "}"
+FilterCondition:
+    MissingFilter | RangeFilter | StringFilter;
 
-FilterCondition ::= MissingFilter | RangeFilter | StringFilter
+MissingFilter:
+    "missing" "(" columns=ColumnList "," includeExclude=IncludeExclude ")";
 
-(* Filtro por valores faltantes *)
-MissingFilter ::= "missing" "(" ColumnList "," IncludeExclude ")"
+RangeFilter:
+    "range" "(" column=Column "," bounds=RangeBounds "," includeExclude=IncludeExclude ")";
 
-(* Filtro por rangos numéricos *)
-RangeFilter ::= "range" "(" Column "," RangeBounds "," IncludeExclude ")"
+RangeBounds:
+    "[" lower=BoundValue "," upper=BoundValue "]"
+    | "[" lower=BoundValue "," upper=BoundValue ")"
+    | "(" lower=BoundValue "," upper=BoundValue "]"
+    | "(" lower=BoundValue "," upper=BoundValue ")";
 
-RangeBounds ::= "[" BoundValue "," BoundValue "]"
-              | "[" BoundValue "," BoundValue ")"
-              | "(" BoundValue "," BoundValue "]"
-              | "(" BoundValue "," BoundValue ")"
+BoundValue:
+    value=Number | "*" | "inf" | "-inf";
 
-BoundValue ::= Number | "*" | "inf" | "-inf"
+StringFilter:
+    "matches" "(" column=Column "," pattern=Pattern "," includeExclude=IncludeExclude ")"
+    | "like" "(" column=Column "," pattern=Pattern "," includeExclude=IncludeExclude ")";
 
-(* Filtro por comparación de strings *)
-StringFilter ::= "matches" "(" Column "," Pattern "," IncludeExclude ")"
-               | "like" "(" Column "," Pattern "," IncludeExclude ")"
+Pattern:
+    value=STRING | regex=Regex;
 
-Pattern ::= STRING | Regex
+IncludeExclude:
+    "include" | "exclude";
 
-IncludeExclude ::= "include" | "exclude"
+ColumnFilter:
+    "select_columns" "{" columns=ColumnList "}"
+    | "drop_columns" "{" columns=ColumnList "}"
+    | "keep" "{" columns=ColumnList "}"
+    | "remove" "{" columns=ColumnList "}";
 
-(* ============================================ *)
-(* FILTRO DE COLUMNAS                           *)
-(* ============================================ *)
+Mapping:
+    ValueMapping | SubstringMapping;
 
-ColumnFilter ::= "select_columns" "{" ColumnList "}"
-               | "drop_columns" "{" ColumnList "}"
-               | "keep" "{" ColumnList "}"
-               | "remove" "{" ColumnList "}"
+ValueMapping:
+    "map" "(" column=Column ")" "{" rules=MappingRules "}" mode=MappingMode;
 
-(* ============================================ *)
-(* MAPEO DE VALORES - 2 TIPOS                   *)
-(* ============================================ *)
+MappingRules:
+    (rules+=MappingRule ("," rules+=MappingRule)*)?;
 
-Mapping ::= ValueMapping | SubstringMapping
+MappingRule:
+    from=STRING "->" to=STRING
+    | pattern=Pattern "=>" to=STRING;
 
-(* Mapeo directo de valores *)
-ValueMapping ::= "map" "(" Column ")" "{" MappingRules "}" MappingMode
+SubstringMapping:
+    "replace" "(" column=Column "," from=STRING "," to=STRING ")" mode=MappingMode;
 
-MappingRules ::= (MappingRule ("," MappingRule)*)?
+MappingMode:
+    "replace" | "as" newName=ID;
 
-MappingRule ::= STRING "->" STRING
-              | Pattern "=>" STRING
+MathOp:
+    "math" "(" expression=MathExpression ")" "as" newName=ID;
 
-(* Mapeo de substrings *)
-SubstringMapping ::= "replace" "(" Column "," STRING "," STRING ")" MappingMode
+MathExpression:
+    Primary (operator=Operator right=Primary)*;
 
-MappingMode ::= "replace" | "as" ID
+Primary:
+    operand=Operand | "(" expression=MathExpression ")" | call=FunctionCall;
 
-(* ============================================ *)
-(* OPERACIONES MATEMÁTICAS                      *)
-(* ============================================ *)
+FunctionCall:
+    function=Function "(" (operands+=Operand ("," operands+=Operand)*)? ")";
 
-MathOp ::= "math" "(" MathExpression ")" "as" ID
+Function:
+    "abs" | "sqrt" | "pow" | "log" | "exp" 
+    | "sin" | "cos" | "tan" | "round" | "ceil" | "floor";
 
-MathExpression ::= Operand Operator Operand
-                 | "(" MathExpression ")"
-                 | FunctionCall
+Operand:
+    column=Column | number=Number | string=STRING;
 
-FunctionCall ::= Function "(" (Operand ("," Operand)*)? ")"
+Operator:
+    "+" | "-" | "*" | "/" | "%" | "^";
 
-Function ::= "abs" | "sqrt" | "pow" | "log" | "exp" 
-           | "sin" | "cos" | "tan" | "round" | "ceil" | "floor"
+Binner:
+    "bin" "(" column=Column ")" "{" definitions=BinDefinitions "}" mode=BinMode;
 
-Operand ::= Column | Number | STRING | MathExpression
+BinDefinitions:
+    (definitions+=BinDef ("," definitions+=BinDef)*)?;
 
-Operator ::= "+" | "-" | "*" | "/" | "%" | "^"
+BinDef:
+    name=BinName ":" interval=Interval;
 
-(* ============================================ *)
-(* DISCRETIZACIÓN (BINNING)                     *)
-(* ============================================ *)
+BinName:
+    name=STRING;
 
-Binner ::= "bin" "(" Column ")" "{" BinDefinitions "}" BinMode
+Interval:
+    "[" lower=IntervalBound "," upper=IntervalBound "]"
+    | "[" lower=IntervalBound "," upper=IntervalBound ")"
+    | "(" lower=IntervalBound "," upper=IntervalBound "]"
+    | "(" lower=IntervalBound "," upper=IntervalBound ")";
 
-BinDefinitions ::= (BinDef ("," BinDef)*)?
+IntervalBound:
+    value=Number | "-inf" | "inf" | "-Infinity" | "Infinity";
 
-BinDef ::= BinName ":" Interval
+BinMode:
+    "replace" | "as" newName=ID;
 
-BinName ::= STRING
+TypeConversion:
+    "to_numeric" "(" columns=ColumnList ")" separator=DecimalSeparator?
+    | "to_string" "(" columns=ColumnList ")"
+    | "to_categorical" "(" columns=ColumnList ")"
+    | "to_boolean" "(" columns=ColumnList ")"
+    | "to_date" "(" columns=ColumnList "," format=DateFormat? ")";
 
-Interval ::= "[" IntervalBound "," IntervalBound "]"
-           | "[" IntervalBound "," IntervalBound ")"
-           | "(" IntervalBound "," IntervalBound "]"
-           | "(" IntervalBound "," IntervalBound ")"
+DecimalSeparator:
+    "separator" "=" ("." | ",");
 
-IntervalBound ::= Number | "-inf" | "inf" | "-Infinity" | "Infinity"
+DateFormat:
+    "format" "=" format=STRING;
 
-BinMode ::= "replace" | "as" ID
+Imputation:
+    "impute" "(" columns=ColumnList ")" "{" method=ImputeMethod "}";
 
-(* ============================================ *)
-(* CONVERSIÓN DE TIPOS                          *)
-(* ============================================ *)
+ImputeMethod:
+    FixedImpute
+    | StatisticalImpute
+    | SequentialImpute
+    | AdvancedImpute;
 
-TypeConversion ::= "to_numeric" "(" ColumnList ")" DecimalSeparator?
-                 | "to_string" "(" ColumnList ")"
-                 | "to_categorical" "(" ColumnList ")"
-                 | "to_boolean" "(" ColumnList ")"
-                 | "to_date" "(" ColumnList "," DateFormat? ")"
+FixedImpute:
+    "fixed" "=" values=ValueList;
 
-DecimalSeparator ::= "separator" "=" ("." | ",")
+ValueList:
+    value=Value | "[" (values+=Value ("," values+=Value)*)? "]";
 
-DateFormat ::= "format" "=" STRING
+Value:
+    number=Number | string=STRING | "null";
 
-(* ============================================ *)
-(* IMPUTACIÓN - TODOS LOS MÉTODOS               *)
-(* ============================================ *)
+StatisticalImpute:
+    "mean"
+    | "median"
+    | "mode"
+    | "most_frequent"
+    | "max"
+    | "min";
 
-Imputation ::= "impute" "(" ColumnList ")" "{" ImputeMethod "}"
+SequentialImpute:
+    "forward_fill"
+    | "backward_fill"
+    | "previous_value"
+    | "next_value";
 
-ImputeMethod ::= FixedImpute
-               | StatisticalImpute
-               | SequentialImpute
-               | AdvancedImpute
+AdvancedImpute:
+    "interpolation" type=InterpolationType?
+    | "moving_average" ("window" "=" windowSize=Number)?
+    | "linear"
+    | "polynomial" ("degree" "=" degree=Number)?
+    | "spline";
 
-(* Imputación con valor fijo *)
-FixedImpute ::= "fixed" "=" ValueList
+InterpolationType:
+    "linear" | "polynomial" | "spline";
 
-ValueList ::= Value | "[" (Value ("," Value)*)? "]"
+OutlierTreatment:
+    "outliers" "(" columns=ColumnList ")" "{" strategy=OutlierStrategy "}";
 
-Value ::= Number | STRING | "null"
+OutlierStrategy:
+    replacement=ReplacementStrategy method=DetectionMethod options=OutlierOptions?;
 
-(* Imputación estadística *)
-StatisticalImpute ::= "mean"
-                    | "median"
-                    | "mode"
-                    | "most_frequent"
-                    | "max"
-                    | "min"
+ReplacementStrategy:
+    "replace_closest"
+    | "replace_missing"
+    | "replace_by_closest"
+    | "replace_with" "=" value=Number
+    | "remove"
+    | "cap";
 
-(* Imputación secuencial *)
-SequentialImpute ::= "forward_fill"
-                   | "backward_fill"
-                   | "previous_value"
-                   | "next_value"
+DetectionMethod:
+    IQRMethod | ZScoreMethod | PercentileMethod;
 
-(* Imputación avanzada *)
-AdvancedImpute ::= "interpolation" InterpolationType?
-                 | "moving_average" ("window" "=" Number)?
-                 | "linear"
-                 | "polynomial" ("degree" "=" Number)?
-                 | "spline"
+IQRMethod:
+    "iqr" params=IQRParams?;
 
-InterpolationType ::= "linear" | "polynomial" | "spline"
+IQRParams:
+    "scalar" "=" scalar=Number
+    | "estimation" "=" estimation=EstimationType;
 
-(* ============================================ *)
-(* TRATAMIENTO DE OUTLIERS - COMPLETO           *)
-(* ============================================ *)
+EstimationType:
+    "R_4" | "R_7" | "R_8";
 
-OutlierTreatment ::= "outliers" "(" ColumnList ")" "{" OutlierStrategy "}"
+ZScoreMethod:
+    "zscore" ("threshold" "=" threshold=Number)?;
 
-OutlierStrategy ::= ReplacementStrategy DetectionMethod OutlierOptions?
+PercentileMethod:
+    "percentile" "lower" "=" lower=Number "upper" "=" upper=Number;
 
-ReplacementStrategy ::= "replace_closest"
-                      | "replace_missing"
-                      | "replace_by_closest"
-                      | "replace_with" "=" Number
-                      | "remove"
-                      | "cap"
+OutlierOptions:
+    "scope" "=" scope=OutlierScope;
 
-DetectionMethod ::= IQRMethod | ZScoreMethod | PercentileMethod
+OutlierScope:
+    "all" | "all_outliers" | "lower_only" | "upper_only";
 
-IQRMethod ::= "iqr" IQRParams?
+Join:
+    "join" "(" left=ID "," right=ID ")" "{" spec=JoinSpec "}";
 
-IQRParams ::= "scalar" "=" Number
-            | "estimation" "=" EstimationType
+JoinSpec:
+    type=JoinType "on" conditions=JoinConditions options=JoinOptions?;
 
-EstimationType ::= "R_4" | "R_7" | "R_8"
+JoinType:
+    "inner" | "left" | "right" | "full" | "cross";
 
-ZScoreMethod ::= "zscore" ("threshold" "=" Number)?
+JoinConditions:
+    conditions+=JoinCondition ("and" conditions+=JoinCondition)*;
 
-PercentileMethod ::= "percentile" "lower" "=" Number "upper" "=" Number
+JoinCondition:
+    left=Column "=" right=Column
+    | left=Column comparator=Comparator right=Column;
 
-OutlierOptions ::= "scope" "=" OutlierScope
+Comparator:
+    "=" | "==" | "!=" | "<" | ">" | "<=" | ">=";
 
-OutlierScope ::= "all" | "all_outliers" | "lower_only" | "upper_only"
+JoinOptions:
+    "suffix" "=" "(" leftSuffix=STRING "," rightSuffix=STRING ")";
 
-(* ============================================ *)
-(* JOIN (UNIÓN DE DATASETS)                     *)
-(* ============================================ *)
+Column:
+    name=ID | table=ID "." column=ID;
 
-Join ::= "join" "(" ID "," ID ")" "{" JoinSpec "}"
+ColumnList:
+    columns+=Column ("," columns+=Column)*
+    | "*";
 
-JoinSpec ::= JoinType "on" JoinConditions JoinOptions?
+Number:
+    INT ('.' INT)? | '.' INT;
 
-JoinType ::= "inner" | "left" | "right" | "full" | "cross"
+Integer returns ecore::EInt:
+    INT;
 
-JoinConditions ::= JoinCondition ("and" JoinCondition)*
+Float returns ecore::EFloat:
+    INT '.' INT | '.' INT | INT '.';
 
-JoinCondition ::= Column "=" Column
-                | Column Comparator Column
+Regex:
+    '/' pattern=STRING '/' flags=STRING?;
 
-Comparator ::= "=" | "==" | "!=" | "<" | ">" | "<=" | ">="
-
-JoinOptions ::= "suffix" "=" "(" STRING "," STRING ")"
-
-(* ============================================ *)
-(* TIPOS BÁSICOS                                *)
-(* ============================================ *)
-
-Column ::= ID | ID "." ID
-
-ColumnList ::= Column ("," Column)*
-             | "*"
-
-ID ::= [a-zA-Z_][a-zA-Z0-9_-]*
-
-STRING ::= '"' [^"]* '"'
-         | "'" [^']* "'"
-
-Number ::= Integer | Float
-
-Integer ::= [0-9]+
-
-Float ::= [0-9]+ "." [0-9]+
-        | "." [0-9]+
-        | [0-9]+ "."
-
-Regex ::= "/" [^/]* "/" [gimsuxy]*
-
-Comment ::= "//" [^\n]*
-          | "/*" .* "*/"
+terminal COMMENT:
+    '//' !('\n'|'\r')* ('\r'? '\n')?
+    | '/*' -> '*/';
 ```
 
 ---
