@@ -1736,6 +1736,155 @@ final = bin(Age) { ... } as age_group |> imputed
 
 ---
 
+## 15. Ejemplo Completo Mínimo: DSL → JSON
+
+### Workflow DSL con 2 Transformaciones y Contratos
+
+```
+workflow "Student Data Pipeline" {
+    // 1. Cargar datos
+    source data = read_csv("/data/students.csv", ,)
+    
+    // 2. Filtrar filas con valores faltantes
+    clean = filter_rows {
+        missing(Age, Grade, exclude)
+    } |> data
+    
+    // 3. Convertir a numérico CON CONTRATOS
+    numeric = to_numeric(Age, Grade) |> clean contracts {
+        // Precondición: los campos deben ser castables a Integer
+        precondition "Age_castable" {
+            value_range(input.Age, castable_to Integer)
+        }
+        
+        // Postcondición: los campos de salida son Integer
+        postcondition "Age_is_integer" {
+            is_type Integer(output.Age)
+        }
+        
+        // Invariante: si input no tiene valores especiales, output tampoco
+        invariant "Age_no_special" {
+            condition {
+                if input.Age not_belongs_to special_values
+                then output.Age not_belongs_to special_values
+            }
+        }
+    }
+}
+```
+
+### JSON Resultante
+
+```json
+{
+  "nodes": [
+    {
+      "id": 1,
+      "node_name": "CSV Reader",
+      "node_type": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+      "parameters": {
+        "file_path": "/data/students.csv",
+        "column_delimiter": ","
+      }
+    },
+    {
+      "id": 2,
+      "node_name": "Row Filter",
+      "node_type": "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
+      "parameters": {
+        "filter_type": "MissingVal_RowFilter",
+        "filter_type_inclusion": "EXCLUDE",
+        "in_columns": [
+          {"column_name": "Age", "column_type": "xstring"},
+          {"column_name": "Grade", "column_type": "xstring"}
+        ],
+        "out_columns": [
+          {"column_name": "Age", "column_type": "xstring"},
+          {"column_name": "Grade", "column_type": "xstring"}
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "node_name": "String to Number",
+      "node_type": "org.knime.base.node.preproc.colconvert.stringtonumber2.StringToNumber2NodeFactory",
+      "parameters": {
+        "decimal_separator": ".",
+        "in_columns": [
+          {"column_name": "Age", "column_type": "xstring"},
+          {"column_name": "Grade", "column_type": "xstring"}
+        ],
+        "out_columns": [
+          {"column_name": "Age", "column_type": "xstring"},
+          {"column_name": "Grade", "column_type": "xstring"}
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {"sourceID": 1, "destID": 2},
+    {"sourceID": 2, "destID": 3}
+  ],
+  "contracts": {
+    "3": {
+      "preconditions": [
+        {
+          "name": "Age_castable",
+          "type": "value_range",
+          "field": "input",
+          "column": "Age",
+          "check": "castable_to",
+          "target_type": "Integer"
+        }
+      ],
+      "postconditions": [
+        {
+          "name": "Age_is_integer",
+          "type": "cast_type",
+          "field": "output",
+          "column": "Age",
+          "check": "is_type",
+          "target_type": "Integer"
+        }
+      ],
+      "invariants": [
+        {
+          "name": "Age_no_special",
+          "type": "condition",
+          "condition": {
+            "if": {
+              "field": "input",
+              "column": "Age",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            },
+            "then": {
+              "field": "output",
+              "column": "Age",
+              "operator": "not_belongs_to",
+              "check": "special_values"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+**Explicación del Flujo**:
+
+1. **Node 1 (CSV Reader)**: Lee `/data/students.csv`
+2. **Node 2 (Row Filter)**: Elimina filas con valores faltantes en `Age` y `Grade`
+3. **Node 3 (String to Number)**: Convierte `Age` y `Grade` a Integer con 3 contratos:
+   - **Precondición**: Verifica que `Age` sea castable a Integer antes de la conversión
+   - **Postcondición**: Verifica que `Age` sea Integer después de la conversión
+   - **Invariante**: Asegura que si `Age` no tenía valores especiales (NA/NaN/null) antes, tampoco los tiene después
+
+**Conexiones**: 1→2→3 (pipeline secuencial)
+
+---
+
 **Autores**: Carlos Breuer Carrasco, Carlos Cambero Rojas  
 **Proyecto**: knime2model_MD4DSP  
 **Repositorio**: i3uex/knime2model_MD4DSP  
