@@ -281,7 +281,7 @@ def json_to_xmi_workflow_with_templates(json_input_folder: str, workflow_filenam
 if __name__ == "__main__":
     # Example usage
     # Parameter to change for the json workflow to convert
-    workflow_filename = "01 Data Cleaning_Workflow2-1"
+    workflow_filename = "StudentDataPipeline_knime"
 
     json_input_folder = "parsed_json_workflows"
     xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
