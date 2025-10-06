@@ -287,7 +287,7 @@ if __name__ == "__main__":
     xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
 
     mapped_nodes, nodes_cont, mapped_nodes_info = json_to_xmi_workflow_with_templates(
-        json_input_folder, workflow_filename, xmi_output_folder, include_contracts=True)
+        json_input_folder, workflow_filename, xmi_output_folder, include_contracts=False)
 
     print(f"Mapped nodes: {mapped_nodes}/{nodes_cont}")
     print("Mapping details:", mapped_nodes_info)
