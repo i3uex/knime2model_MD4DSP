@@ -4,11 +4,13 @@ This project aims to map a KNIME workflow (`.knwf`) to a MD4DSP workflow (`.xmi`
 
 ![MappingDesign](doc_images/mapping_knwf_design.png)
 
-The project is divided into three main scripts:
+The project is divided into several main scripts:
 
-1. **`parsers/knwf2json.py`**: script that parses a KNIME workflow and exports the data to JSON intermediate file.
-2. **`parsers/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow.
-3. **`parsers/knwf2workflow.py`**: script that combines the previous two scripts to parse a KNIME workflow and export the data to a MD4DSP Workflow instance.
+1. **`mapping/knwf2json.py`**: script that parses a KNIME workflow and exports the data to JSON intermediate file.
+2. **`mapping/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow.
+3. **`mapping/knwf2workflow.py`**: script that combines the previous two scripts to parse a KNIME workflow and export the data to a MD4DSP Workflow instance.
+4. **`mapping/json_xtext2json_knime.py`**: script that transforms Xtext-generated JSON (from DSL workflows) to KNIME-compatible JSON format, including contract parsing.
+5. **`mapping/json2workflow_with_contracts.py`**: enhanced version of json2workflow that reads contracts directly from JSON and includes them in the generated XMI.
 ## Prerequisites
 
 - Anaconda Environment
@@ -86,11 +88,58 @@ The project is divided into three main scripts:
    
 ## Mapping and Result Visualization Execution
 
+### Standard Mapping (KNIME → XMI)
+
 1. Run the Python script to parse and map data from KNIME workflows to MD4DSP workflows using templates:
     ```bash
     python -m mapping.knwf2workflow
     ```
-   These mapped models, stored in `parsed_xmi_workflows/` directory,can be imported directly in [MM-M4DS](https://github.com/i3uex/MM-M4DS) next to the proyect library `library_validation.xmi`.
+   These mapped models, stored in `parsed_xmi_workflows/` directory, can be imported directly in [MM-M4DS](https://github.com/i3uex/MM-M4DS) next to the project library `library_validation.xmi`.
+
+### DSL Workflow Mapping (Xtext → XMI)
+
+For workflows defined using the Workflow DSL (Xtext grammar):
+
+1. **Transform Xtext JSON to KNIME JSON format** (with contract parsing):
+    ```bash
+    python3 mapping/json_xtext2json_knime.py
+    ```
+   - Input: Xtext-generated JSON from `.wf` files (nested format with type annotations)
+   - Output: KNIME-compatible JSON with flattened structure
+   - Contracts: Automatically parsed and transformed from Xtext format to KNIME format
+   - Configuration: Edit the script's `main()` function to set workflow name and folders
+
+2. **Generate XMI with contracts from JSON**:
+    ```bash
+    python3 -m mapping.json2workflow_with_contracts
+    ```
+   - Input: KNIME JSON format (from step 1 or manually created)
+   - Output: Complete XMI workflow with contracts read from JSON
+   - Contracts: Preconditions, postconditions, and invariants are parsed and included in the XMI
+   - Note: This script reads contracts from the JSON instead of generating automatic ones
+
+### Contract Support
+
+The pipeline now supports three types of contracts:
+- **value_range**: Validates that values meet specific criteria (e.g., `castable_to` for type conversion checks)
+- **cast_type**: Validates type conversions (e.g., ensuring a column becomes an Integer)
+- **condition**: IF-THEN validation rules (e.g., if input has no special values, then output has no special values)
+
+Contracts can be defined per column and per node in the JSON format:
+```json
+{
+  "contracts": {
+    "node_id": {
+      "preconditions": [...],
+      "postconditions": [...],
+      "invariants": [...]
+    }
+  }
+}
+```
+
+### Visualization
+
 2. (Optional) Run the Python script visualization_scripts/contract_val_results_gui.py to deploy a GUI to visualize contract validation results from every subworkflow mapped:
    ```bash
    python -m visualization_scripts.contract_val_results_gui
@@ -249,7 +298,12 @@ knime2model_MD4DSP/
 - **`logs/`**: contains the logs of the project.
 
 
-- **`mapping/`**: contains the Python scripts to parse and export data from a KNIME workflow to a JSON file and from a JSON file to a MD4DSP workflow.
+- **`mapping/`**: contains the Python scripts to parse and export data from a KNIME workflow to a JSON file and from a JSON file to a MD4DSP workflow. Includes:
+  - `knwf2json.py`: KNIME workflow parser
+  - `json2workflow.py`: JSON to XMI converter (with automatic contract generation)
+  - `json2workflow_with_contracts.py`: JSON to XMI converter that reads contracts from JSON
+  - `knwf2workflow.py`: End-to-end KNIME to XMI pipeline
+  - `json_xtext2json_knime.py`: Xtext JSON to KNIME JSON transformer with contract parsing
 
 
 - **`parsed_json_workflows/`**: contains the JSON data exported from the parsed selected input KNIME subworkflows.
