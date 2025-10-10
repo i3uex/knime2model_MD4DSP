@@ -7,10 +7,10 @@ This project aims to map a KNIME workflow (`.knwf`) to a MD4DSP workflow (`.xmi`
 The project is divided into several main scripts:
 
 1. **`mapping/knwf2json.py`**: script that parses a KNIME workflow and exports the data to JSON intermediate file.
-2. **`mapping/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow.
+2. **`mapping/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow (with automatic contract generation).
 3. **`mapping/knwf2workflow.py`**: script that combines the previous two scripts to parse a KNIME workflow and export the data to a MD4DSP Workflow instance.
 4. **`mapping/json_xtext2json_knime.py`**: script that transforms Xtext-generated JSON (from DSL workflows) to KNIME-compatible JSON format, including contract parsing.
-5. **`mapping/json2workflow_with_contracts.py`**: enhanced version of json2workflow that reads contracts directly from JSON and includes them in the generated XMI.
+5. **`mapping/json2workflow_with_contracts.py`**: enhanced version of json2workflow that reads contracts directly from JSON (column-based format) and includes them in the generated XMI. Supports 71+ contract patterns across all node types.
 ## Prerequisites
 
 - Anaconda Environment
@@ -115,28 +115,86 @@ For workflows defined using the Workflow DSL (Xtext grammar):
     ```
    - Input: KNIME JSON format (from step 1 or manually created)
    - Output: Complete XMI workflow with contracts read from JSON
-   - Contracts: Preconditions, postconditions, and invariants are parsed and included in the XMI
+   - Contracts: Reads preconditions, postconditions, and invariants from JSON
+   - Configuration: Edit `parser_config.yaml` to specify input/output paths
+   - Format: Supports column-based contract structure (see Contract Support section)
    - Note: This script reads contracts from the JSON instead of generating automatic ones
 
 ### Contract Support
 
-The pipeline now supports three types of contracts:
-- **value_range**: Validates that values meet specific criteria (e.g., `castable_to` for type conversion checks)
-- **cast_type**: Validates type conversions (e.g., ensuring a column becomes an Integer)
-- **condition**: IF-THEN validation rules (e.g., if input has no special values, then output has no special values)
+The pipeline now supports comprehensive contract specification and validation. Contracts can be included in two ways:
 
-Contracts can be defined per column and per node in the JSON format:
+#### 1. Automatic Contract Generation
+Use `json2workflow.py` to automatically generate basic contracts based on node types and transformations.
+
+#### 2. Manual Contract Specification (Recommended)
+Use `json2workflow_with_contracts.py` to read detailed contracts from JSON files. This approach supports:
+
+**Contract Types:**
+- **value_range**: Validates that values meet specific criteria (e.g., `castable_to`, `is_type`, `numeric`, `no_outliers`, `has_missing`, `no_missing`)
+- **condition**: IF-THEN validation rules with cast_type or special_value checks
+- **field_range**: Validates column existence and filtering operations
+
+**Contract Categories:**
+- **PRECONDITION**: Constraints on input data before transformation
+- **POSTCONDITION**: Guarantees on output data after transformation
+- **INVARIANT**: Properties preserved during transformation
+
+**JSON Format (Column-based structure):**
 ```json
 {
   "contracts": {
     "node_id": {
-      "preconditions": [...],
-      "postconditions": [...],
-      "invariants": [...]
+      "columns": {
+        "column_name": {
+          "preconditions": [
+            {
+              "name": "castType",
+              "type": "value_range",
+              "check": "castable_to",
+              "target_type": "Integer"
+            }
+          ],
+          "postconditions": [
+            {
+              "name": "castType",
+              "type": "value_range",
+              "check": "is_type",
+              "target_type": "Integer"
+            }
+          ],
+          "invariants": [
+            {
+              "name": "specialValue",
+              "type": "condition",
+              "if": {
+                "condition_type": "special_value",
+                "belong_op": "NOTBELONG"
+              },
+              "then": {
+                "result_type": "special_value",
+                "belong_op": "NOTBELONG"
+              }
+            }
+          ]
+        }
+      }
     }
   }
 }
 ```
+
+**Supported Contract Patterns:**
+- **String to Number**: Cast type validation (castable_to → is_type + preservation)
+- **Rule Engine/Mapping**: Value mapping validation (value_in → value_not_in + fix_value mapping)
+- **Row Filter**: Range validation (interval checks)
+- **Column Filter**: Field existence validation (BELONG → NOTBELONG)
+- **Numeric Outliers**: Outlier detection and removal (numeric → no_outliers + preservation)
+- **Missing Value**: Imputation validation (has_missing → no_missing + preservation)
+- **Numeric Binner**: Discretization validation (numeric → categorical + interval→fix_value mapping)
+
+**Example: Complete workflow with contracts**
+See `parsed_json_workflows/Model data set with metanode/Model data set with metanode_with_contracts.json` for a complete example with 71 contracts across 16 nodes.
 
 ### Visualization
 
