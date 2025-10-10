@@ -1,0 +1,1723 @@
+{
+    "nodes": [
+        {
+            "id": 12,
+            "node_name": "String to Number",
+            "node_type": "org.knime.base.node.preproc.colconvert.stringtonumber2.StringToNumber2NodeFactory",
+            "parameters": {
+                "decimal_separator": ".",
+                "in_columns": [
+                    {
+                        "column_name": "TERRITORY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ETHNICITY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_2",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Enroll",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "IRSCHOOL",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "sex",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "premiere",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "CONTACT_CODE1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "stuemail",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "prediction",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "TERRITORY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 14,
+            "node_name": "Rule Engine",
+            "node_type": "org.knime.base.node.rules.engine.RuleEngineNodeFactory",
+            "parameters": {
+                "rules": [
+                    "$Instate$ LIKE \"*Y*\" => \"1\"",
+                    "$Instate$ LIKE \"*N*\" =>\"0\"",
+                    "TRUE => $Instate$"
+                ],
+                "function_types": [
+                    "LIKE",
+                    "LIKE"
+                ],
+                "new_column_name": "prediction",
+                "replace_column_name": "Instate",
+                "append_column": false,
+                "in_columns": [
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "prediction",
+                        "column_type": "xstring"
+                    }
+                ],
+                "mapping": {
+                    "replace_column_name": "Instate",
+                    "mapping_parameters": [
+                        {
+                            "key": "Y",
+                            "value": "1"
+                        },
+                        {
+                            "key": "N",
+                            "value": "0"
+                        }
+                    ],
+                    "map_operation": "VALUE_MAPPING",
+                    "unique_replacement_one_column": false
+                }
+            }
+        },
+        {
+            "id": 26,
+            "node_name": "File Reader",
+            "node_type": "org.knime.base.node.io.filehandling.csv.reader.FileReaderNodeFactory",
+            "parameters": {
+                "file_path": "/Users/paulschwal/Documents/School Work/Fall 2021/ITSCM 774 (data analytics)/Term project/Data_model(1).csv"
+            }
+        },
+        {
+            "id": 27,
+            "node_name": "Rule Engine",
+            "node_type": "org.knime.base.node.rules.engine.RuleEngineNodeFactory",
+            "parameters": {
+                "rules": [
+                    "$TERRITORY$ LIKE \"*N*\" => \"0\"",
+                    "$TERRITORY$ LIKE \"*A*\" => \"0\"",
+                    "TRUE => $TERRITORY$"
+                ],
+                "function_types": [
+                    "LIKE",
+                    "LIKE"
+                ],
+                "new_column_name": "prediction",
+                "replace_column_name": "TERRITORY",
+                "append_column": false,
+                "in_columns": [
+                    {
+                        "column_name": "TERRITORY",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "prediction",
+                        "column_type": "xstring"
+                    }
+                ],
+                "mapping": {
+                    "replace_column_name": "TERRITORY",
+                    "mapping_parameters": [
+                        {
+                            "key": "N",
+                            "value": "0"
+                        },
+                        {
+                            "key": "A",
+                            "value": "0"
+                        }
+                    ],
+                    "map_operation": "VALUE_MAPPING",
+                    "unique_replacement_one_column": false
+                }
+            }
+        },
+        {
+            "id": 33,
+            "node_name": "Row Filter (deprecated)",
+            "node_type": "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
+            "parameters": {
+                "filter_type": "RangeVal_RowFilter",
+                "lower_bound": 0.0,
+                "upper_bound": 1000000000,
+                "has_lower_bound": true,
+                "has_upper_bound": false,
+                "filter_type_inclusion": "INCLUDE",
+                "in_columns": [
+                    {
+                        "column_name": "init_span",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "init_span",
+                        "column_type": "xstring"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 38,
+            "node_name": "Column Filter",
+            "node_type": "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "ETHNICITY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "TERRITORY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_2",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Enroll",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "TOTAL_CONTACTS",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "SELF_INIT_CNTCTS",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "SOLICITED_CNTCTS",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "CAMPUS_VISIT",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "IRSCHOOL",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "satscore",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "sex",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "mailq",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "premiere",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "init_span",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "int1rat",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "int2rat",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "hscrat",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "distance",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "TRAVEL_INIT_CNTCTS",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "REFERRAL_CNTCTS",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "CONTACT_CODE1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "telecq",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "interest",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "stuemail",
+                        "column_type": "xstring"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 42,
+            "node_name": "Numeric Outliers",
+            "node_type": "org.knime.base.node.stats.outlier.handler.NumericOutliersNodeFactory",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "distance",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "distance",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "Instate",
+                        "column_type": "xstring"
+                    }
+                ],
+                "estimation_type": "R_4",
+                "iqr_scalar": 1.5,
+                "replacement_strategy": "Closest permitted value",
+                "outlier_treatment": "Replace outlier values",
+                "detection_option": "All outliers"
+            }
+        },
+        {
+            "id": 3,
+            "node_name": "Missing Value",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "sex",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ETHNICITY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "IRSCHOOL",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "sex",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ETHNICITY",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "IRSCHOOL",
+                        "column_type": "xstring"
+                    }
+                ],
+                "imputationType": "MostFrequent",
+                "fixStringValues": [
+                    null,
+                    null,
+                    null
+                ]
+            }
+        },
+        {
+            "id": 43,
+            "node_name": "Missing Value",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "satscore",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "satscore",
+                        "column_type": "xstring"
+                    }
+                ],
+                "imputationType": "Interpolation",
+                "fixStringValues": [
+                    null
+                ],
+                "original_node_id": 3
+            }
+        },
+        {
+            "id": 44,
+            "node_name": "Missing Value",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "distance",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "distance",
+                        "column_type": "xstring"
+                    }
+                ],
+                "imputationType": "Mean",
+                "fixStringValues": [
+                    null,
+                    null
+                ],
+                "original_node_id": 3
+            }
+        },
+        {
+            "id": 45,
+            "node_name": "Missing Value",
+            "parameters": {
+                "in_columns": [
+                    {
+                        "column_name": "ACADEMIC_INTEREST_1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_2",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "ACADEMIC_INTEREST_1",
+                        "column_type": "xstring"
+                    },
+                    {
+                        "column_name": "ACADEMIC_INTEREST_2",
+                        "column_type": "xstring"
+                    }
+                ],
+                "imputationType": "Fixed Value",
+                "fixStringValues": [
+                    "Unknown",
+                    "Unknown"
+                ],
+                "original_node_id": 3
+            }
+        },
+        {
+            "id": 8,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "54 Percentile and Under",
+                        "closureType": "openClosed",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "1040.0"
+                    },
+                    {
+                        "binName": "55-75 Percentile",
+                        "closureType": "openOpen",
+                        "leftMargin": "1040.0",
+                        "rightMargin": "1160.0"
+                    },
+                    {
+                        "binName": "76-93 Percentile",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1160.0",
+                        "rightMargin": "1340.0"
+                    },
+                    {
+                        "binName": "94+ percentile",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1340.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "satscore",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "satscore_binned",
+                        "column_type": "xstring"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 46,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "Unknown",
+                        "closureType": "openOpen",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "1.0"
+                    },
+                    {
+                        "binName": "Zone 1",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1.0",
+                        "rightMargin": "3.0"
+                    },
+                    {
+                        "binName": "Zone 2",
+                        "closureType": "closedOpen",
+                        "leftMargin": "3.0",
+                        "rightMargin": "5.0"
+                    },
+                    {
+                        "binName": "Zone 3",
+                        "closureType": "closedOpen",
+                        "leftMargin": "5.0",
+                        "rightMargin": "7.0"
+                    },
+                    {
+                        "binName": "Zone 4",
+                        "closureType": "closedOpen",
+                        "leftMargin": "7.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "TERRITORY",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "TERRITORY_binned",
+                        "column_type": "xstring"
+                    }
+                ],
+                "original_node_id": 8
+            }
+        },
+        {
+            "id": 47,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "low",
+                        "closureType": "openOpen",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "42830.0"
+                    },
+                    {
+                        "binName": "Moderate",
+                        "closureType": "closedOpen",
+                        "leftMargin": "42830.0",
+                        "rightMargin": "55559.0"
+                    },
+                    {
+                        "binName": "High",
+                        "closureType": "closedOpen",
+                        "leftMargin": "55559.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "avg_income",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "avg_income_binned",
+                        "column_type": "xstring"
+                    }
+                ],
+                "original_node_id": 8
+            }
+        },
+        {
+            "id": 48,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "Low",
+                        "closureType": "openOpen",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "1.0"
+                    },
+                    {
+                        "binName": "Moderate",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1.0",
+                        "rightMargin": "4.0"
+                    },
+                    {
+                        "binName": "High",
+                        "closureType": "closedOpen",
+                        "leftMargin": "4.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "TOTAL_CONTACTS",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "TOTAL_CONTACTS_binned",
+                        "column_type": "xstring"
+                    }
+                ],
+                "original_node_id": 8
+            }
+        },
+        {
+            "id": 49,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "Low",
+                        "closureType": "openOpen",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "1.0"
+                    },
+                    {
+                        "binName": "Moderate",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1.0",
+                        "rightMargin": "4.0"
+                    },
+                    {
+                        "binName": "High",
+                        "closureType": "closedOpen",
+                        "leftMargin": "4.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "SOLICITED_CNTCTS",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "SOLICITED_CNTCTS_binned",
+                        "column_type": "xstring"
+                    }
+                ],
+                "original_node_id": 8
+            }
+        },
+        {
+            "id": 50,
+            "node_name": "Numeric Binner",
+            "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+            "parameters": {
+                "bins": [
+                    {
+                        "binName": "Low",
+                        "closureType": "openOpen",
+                        "leftMargin": "-Infinity",
+                        "rightMargin": "1.0"
+                    },
+                    {
+                        "binName": "Moderate",
+                        "closureType": "closedOpen",
+                        "leftMargin": "1.0",
+                        "rightMargin": "4.0"
+                    },
+                    {
+                        "binName": "High",
+                        "closureType": "closedOpen",
+                        "leftMargin": "4.0",
+                        "rightMargin": "Infinity"
+                    }
+                ],
+                "in_columns": [
+                    {
+                        "column_name": "SELF_INIT_CNTCTS",
+                        "column_type": "xstring"
+                    }
+                ],
+                "out_columns": [
+                    {
+                        "column_name": "SELF_INIT_CNTCTS_binned",
+                        "column_type": "xstring"
+                    }
+                ],
+                "original_node_id": 8
+            }
+        }
+    ],
+    "connections": [
+        {
+            "sourceID": 12,
+            "destID": 42
+        },
+        {
+            "sourceID": 14,
+            "destID": 12
+        },
+        {
+            "sourceID": 26,
+            "destID": 3
+        },
+        {
+            "sourceID": 27,
+            "destID": 14
+        },
+        {
+            "sourceID": 33,
+            "destID": 38
+        },
+        {
+            "sourceID": 38,
+            "destID": 27
+        },
+        {
+            "sourceID": 42,
+            "destID": 8
+        },
+        {
+            "sourceID": 3,
+            "destID": 43
+        },
+        {
+            "sourceID": 43,
+            "destID": 44
+        },
+        {
+            "sourceID": 44,
+            "destID": 45
+        },
+        {
+            "sourceID": 45,
+            "destID": 33
+        },
+        {
+            "sourceID": 8,
+            "destID": 46
+        },
+        {
+            "sourceID": 46,
+            "destID": 47
+        },
+        {
+            "sourceID": 47,
+            "destID": 48
+        },
+        {
+            "sourceID": 48,
+            "destID": 49
+        },
+        {
+            "sourceID": 49,
+            "destID": 50
+        }
+    ],
+    "contracts": {
+        "12": {
+            "columns": {
+                "TERRITORY": {
+                    "preconditions": [
+                        {
+                            "name": "castType",
+                            "type": "value_range",
+                            "check": "castable_to",
+                            "target_type": "Integer"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "castType",
+                            "type": "value_range",
+                            "check": "is_type",
+                            "target_type": "Integer"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "specialValue",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        },
+                        {
+                            "name": "castType",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "cast_type",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "cast_type",
+                                "belong_op": "BELONG",
+                                "target_type": "Integer"
+                            }
+                        }
+                    ]
+                },
+                "Instate": {
+                    "preconditions": [
+                        {
+                            "name": "castType",
+                            "type": "value_range",
+                            "check": "castable_to",
+                            "target_type": "Integer"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "castType",
+                            "type": "value_range",
+                            "check": "is_type",
+                            "target_type": "Integer"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "specialValue",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        },
+                        {
+                            "name": "castType",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "cast_type",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "cast_type",
+                                "belong_op": "BELONG",
+                                "target_type": "Integer"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "38": {
+            "columns": {
+                "TRAVEL_INIT_CNTCTS": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                },
+                "REFERRAL_CNTCTS": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                },
+                "CONTACT_CODE1": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                },
+                "telecq": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                },
+                "interest": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                },
+                "stuemail": {
+                    "preconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "exists",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "columnFilter",
+                            "type": "value_range",
+                            "check": "not_exists",
+                            "target_type": "String"
+                        }
+                    ]
+                }
+            }
+        },
+        "42": {
+            "columns": {
+                "avg_income": {
+                    "preconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "no_outliers",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "outlierPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "distance": {
+                    "preconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "no_outliers",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "outlierPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "Instate": {
+                    "preconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "outlier",
+                            "type": "value_range",
+                            "check": "no_outliers",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "outlierPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "14": {
+            "columns": {
+                "Instate": {
+                    "preconditions": [
+                        {
+                            "name": "mapping",
+                            "type": "value_range",
+                            "check": "value_in",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "mapping",
+                            "type": "value_range",
+                            "check": "value_not_in",
+                            "belong_op": "NOTBELONG",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "mapping",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "fix_value",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "27": {
+            "columns": {
+                "TERRITORY": {
+                    "preconditions": [
+                        {
+                            "name": "mapping",
+                            "type": "value_range",
+                            "check": "value_in",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "mapping",
+                            "type": "value_range",
+                            "check": "value_not_in",
+                            "belong_op": "NOTBELONG",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "mapping",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "fix_value",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "33": {
+            "columns": {
+                "init_span": {
+                    "preconditions": [
+                        {
+                            "name": "rowFilterRange",
+                            "type": "value_range",
+                            "check": "in_range",
+                            "belong_op": "BELONG",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "rowFilterRange",
+                            "type": "value_range",
+                            "check": "in_range",
+                            "belong_op": "BELONG",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "rowFilterRange",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "interval",
+                                "belong_op": "BELONG",
+                                "target_type": "Double"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "3": {
+            "columns": {
+                "sex": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "ETHNICITY": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "IRSCHOOL": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "43": {
+            "columns": {
+                "satscore": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "44": {
+            "columns": {
+                "avg_income": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "distance": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "45": {
+            "columns": {
+                "ACADEMIC_INTEREST_1": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                },
+                "ACADEMIC_INTEREST_2": {
+                    "preconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "has_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "imputeMissing",
+                            "type": "value_range",
+                            "check": "no_missing",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "imputePreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            },
+                            "then": {
+                                "result_type": "special_value",
+                                "belong_op": "NOTBELONG"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "8": {
+            "columns": {
+                "satscore": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "46": {
+            "columns": {
+                "TERRITORY": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "47": {
+            "columns": {
+                "avg_income": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "48": {
+            "columns": {
+                "TOTAL_CONTACTS": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "49": {
+            "columns": {
+                "SOLICITED_CNTCTS": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "50": {
+            "columns": {
+                "SELF_INIT_CNTCTS": {
+                    "preconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "numeric",
+                            "target_type": "Double"
+                        }
+                    ],
+                    "postconditions": [
+                        {
+                            "name": "binner",
+                            "type": "value_range",
+                            "check": "categorical",
+                            "target_type": "String"
+                        }
+                    ],
+                    "invariants": [
+                        {
+                            "name": "binnerPreservation",
+                            "type": "condition",
+                            "if": {
+                                "condition_type": "interval",
+                                "belong_op": "BELONG"
+                            },
+                            "then": {
+                                "result_type": "fix_value",
+                                "belong_op": "BELONG",
+                                "target_type": "String"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
