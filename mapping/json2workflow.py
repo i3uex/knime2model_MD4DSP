@@ -1,4 +1,3 @@
-
 import os
 import json
 from string import Template
@@ -281,7 +280,7 @@ def json_to_xmi_workflow_with_templates(json_input_folder: str, workflow_filenam
 if __name__ == "__main__":
     # Example usage
     # Parameter to change for the json workflow to convert
-    workflow_filename = "StudentDataPipeline_knime"
+    workflow_filename = "Model data set with metanode_with_contracts"
 
     json_input_folder = "parsed_json_workflows"
     xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"

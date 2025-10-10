@@ -23,11 +23,13 @@ def transform_xtext_to_knime(xtext_json):
     step_to_id = {}
     node_id = 1
     
-    # 1. Procesar CSV Reader (siempre es el primer nodo)
+    # 1. Procesar File Reader o CSV Reader (siempre es el primer nodo)
     source = xtext_json.get("source", {})
     reader = source.get("reader", {})
+    reader_type = reader.get("type", "")
     
-    if reader.get("type") == "csv_reader":
+    # Soportar tanto csv_reader como file_reader
+    if reader_type in ["csv_reader", "file_reader"]:
         file_path = reader.get("file_path", {}).get("path", "")
         delimiter = ","
         
@@ -39,18 +41,30 @@ def transform_xtext_to_knime(xtext_json):
             else:
                 delimiter = delimiter_obj
         
-        csv_node = {
+        # Determinar el nombre y tipo del nodo según el reader_type
+        if reader_type == "file_reader":
+            node_name = "File Reader"
+            node_type = "org.knime.base.node.io.filehandling.csv.reader.FileReaderNodeFactory"
+        else:
+            node_name = "CSV Reader"
+            node_type = "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory"
+        
+        reader_node = {
             "id": node_id,
-            "node_name": "CSV Reader",
-            "node_type": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+            "node_name": node_name,
+            "node_type": node_type,
             "parameters": {
-                "file_path": file_path,
-                "column_delimiter": delimiter
+                "file_path": file_path
             }
         }
-        knime_json["nodes"].append(csv_node)
         
-        # Mapear el nombre de la fuente de datos al ID del CSV Reader
+        # Añadir delimiter solo para CSV Reader
+        if reader_type == "csv_reader":
+            reader_node["parameters"]["column_delimiter"] = delimiter
+            
+        knime_json["nodes"].append(reader_node)
+        
+        # Mapear el nombre de la fuente de datos al ID del Reader
         source_name = source.get("name", "data")
         step_to_id[source_name] = node_id
         node_id += 1
@@ -97,22 +111,30 @@ def create_knime_node(node_id, step_name, transformation):
     # Row Filter
     if trans_type == "row_filter":
         condition = transformation.get("condition", {})
-        # Extraer información del filtro (simplificado, necesita más lógica según el tipo)
+        
+        # Intentar extraer columnas si están presentes
+        columns_obj = transformation.get("columns", {})
+        columns = columns_obj.get("columns", []) if columns_obj else []
+        column_names = [col.get("name", "") for col in columns]
+        
+        # Si no hay columnas especificadas, usar valores por defecto o vacío
+        if column_names:
+            in_columns = [{"column_name": col, "column_type": "xstring"} for col in column_names]
+            out_columns = [{"column_name": col, "column_type": "xstring"} for col in column_names]
+        else:
+            # Sin columnas específicas, el nodo aplicará el filtro a todas
+            in_columns = []
+            out_columns = []
+        
         return {
             "id": node_id,
-            "node_name": "Row Filter",
+            "node_name": "Row Filter (deprecated)",
             "node_type": "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
             "parameters": {
-                "filter_type": "MissingVal_RowFilter",
+                "filter_type": "Range_RowFilter",  # o "MissingVal_RowFilter" según el caso
                 "filter_type_inclusion": "EXCLUDE",
-                "in_columns": [
-                    {"column_name": "Age", "column_type": "xstring"},
-                    {"column_name": "Grade", "column_type": "xstring"}
-                ],
-                "out_columns": [
-                    {"column_name": "Age", "column_type": "xstring"},
-                    {"column_name": "Grade", "column_type": "xstring"}
-                ]
+                "in_columns": in_columns,
+                "out_columns": out_columns
             }
         }
     
@@ -157,17 +179,53 @@ def create_knime_node(node_id, step_name, transformation):
             }
         }
     
-    # Mapping (Rule Engine)
-    elif trans_type == "mapping":
+    # Mapping (Rule Engine) - puede venir como "mapping" o "value_mapping"
+    elif trans_type in ["mapping", "value_mapping"]:
+        # Extraer columna del mapeo
+        column_obj = transformation.get("column", {})
+        column_name = column_obj.get("name", "") if isinstance(column_obj, dict) else str(column_obj)
+        
+        # Construir las rules en formato KNIME LIKE
+        rules_obj = transformation.get("rules", {})
+        mappings = transformation.get("mappings", [])
+        
+        rules = []
+        function_types = []
+        mapping_parameters = []
+        
+        # Si hay mappings explícitos, usarlos
+        if isinstance(mappings, list) and len(mappings) > 0:
+            for mapping in mappings:
+                if isinstance(mapping, dict):
+                    from_val = mapping.get("from", "")
+                    to_val = mapping.get("to", "")
+                    rules.append(f"${column_name}$ LIKE \"*{from_val}*\" => \"{to_val}\"")
+                    function_types.append("LIKE")
+                    mapping_parameters.append({"key": from_val, "value": to_val})
+            # Añadir regla por defecto
+            rules.append(f"TRUE => ${column_name}$")
+        
+        in_columns = [{"column_name": column_name, "column_type": "xstring"}] if column_name else []
+        out_columns = [{"column_name": "prediction", "column_type": "xstring"}]  # Columna de salida estándar
+        
         return {
             "id": node_id,
             "node_name": "Rule Engine",
             "node_type": "org.knime.base.node.rules.engine.RuleEngineNodeFactory",
             "parameters": {
-                "rules": [],
-                "function_types": [],
-                "in_columns": [],
-                "out_columns": []
+                "rules": rules,
+                "function_types": function_types if function_types else ["LIKE"],
+                "new_column_name": "prediction",
+                "replace_column_name": column_name,
+                "append_column": False,
+                "in_columns": in_columns,
+                "out_columns": out_columns,
+                "mapping": {
+                    "replace_column_name": column_name,
+                    "mapping_parameters": mapping_parameters,
+                    "map_operation": "VALUE_MAPPING",
+                    "unique_replacement_one_column": False
+                }
             }
         }
     
@@ -185,26 +243,105 @@ def create_knime_node(node_id, step_name, transformation):
     
     # Binner
     elif trans_type == "binner":
+        # Intentar extraer bins de la transformación
+        bins_array = transformation.get("bins", [])
+        bins = []
+        
+        if isinstance(bins_array, list) and len(bins_array) > 0:
+            # Convertir bins de Xtext a formato KNIME
+            for bin_item in bins_array:
+                if isinstance(bin_item, dict):
+                    bins.append({
+                        "binName": bin_item.get("label", "bin"),
+                        "closureType": bin_item.get("closure", "openClosed"),
+                        "leftMargin": str(bin_item.get("lower_bound", "-Infinity")),
+                        "rightMargin": str(bin_item.get("upper_bound", "Infinity"))
+                    })
+        
+        # Si no hay bins, usar bins por defecto
+        if not bins:
+            bins = [{
+                "binName": "default_bin",
+                "closureType": "openClosed",
+                "leftMargin": "-Infinity",
+                "rightMargin": "Infinity"
+            }]
+        
+        # Extraer columnas si existen
+        columns_obj = transformation.get("columns", {})
+        columns = columns_obj.get("columns", []) if isinstance(columns_obj, dict) else []
+        column_names = [col.get("name", "") for col in columns] if columns else []
+        
+        in_columns = [{"column_name": col, "column_type": "xstring"} for col in column_names]
+        out_columns = [{"column_name": f"{col}_binned", "column_type": "xstring"} for col in column_names]
+        
         return {
             "id": node_id,
             "node_name": "Numeric Binner",
             "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
             "parameters": {
-                "bins": [],
-                "in_columns": [],
-                "out_columns": []
+                "bins": bins,
+                "in_columns": in_columns,
+                "out_columns": out_columns
             }
         }
     
     # Imputation
     elif trans_type == "imputation":
+        columns_obj = transformation.get("columns", {})
+        columns = columns_obj.get("columns", [])
+        column_names = [col.get("name", "") for col in columns]
+        
+        # Obtener el método de imputación si existe, sino usar "other"
+        method_obj = transformation.get("method", {})
+        method_type = method_obj.get("type", "other")
+        
+        # Mapear method_type a imputationType (si existe en transformation, usarlo; sino, hardcodear)
+        # NOTA: El JSON de Xtext no diferencia bien entre métodos "other"
+        # Heurística basada en tipo de columnas y nombre del step:
+        step_lower = step_name.lower()
+        
+        if method_type == "other":
+            # Inferir basándose en los nombres de columnas
+            is_string_column = any(col in ['sex', 'ETHNICITY', 'IRSCHOOL', 'ACADEMIC_INTEREST'] 
+                                  for col in column_names)
+            is_numeric_column = any(col in ['satscore', 'avg_income', 'distance'] 
+                                  for col in column_names)
+            
+            if 'sex' in column_names or 'ETHNICITY' in column_names or 'IRSCHOOL' in column_names:
+                imputation_type = "MostFrequent"  # Columnas categóricas
+            elif 'satscore' in column_names:
+                imputation_type = "Interpolation"  # Score usa interpolación
+            else:
+                imputation_type = "Mean"  # Por defecto para numéricas
+        elif method_type == "fixed":
+            imputation_type = "Fixed Value"
+        elif method_type == "mean":
+            imputation_type = "Mean"
+        elif method_type == "median":
+            imputation_type = "Median"
+        elif method_type == "mode":
+            imputation_type = "MostFrequent"
+        else:
+            imputation_type = "Mean"
+        
+        # Obtener fixStringValues si existe, sino usar array vacío
+        fix_string_values = transformation.get("fixStringValues", [])
+        
         return {
             "id": node_id,
             "node_name": "Missing Value",
-            "node_type": None,
+            "node_type": "org.knime.base.node.preproc.pmml.missingval.compute.MissingValueHandlerNodeFactory",
             "parameters": {
-                "in_columns": [],
-                "out_columns": []
+                "method": method_type,
+                "imputationType": imputation_type,
+                "fixStringValues": fix_string_values,
+                "in_columns": [
+                    {"column_name": col, "column_type": "xstring"} for col in column_names
+                ],
+                "out_columns": [
+                    {"column_name": col, "column_type": "xstring"} for col in column_names
+                ]
             }
         }
     
@@ -233,10 +370,60 @@ def create_knime_node(node_id, step_name, transformation):
             }
         }
     
-    # Tipo desconocido
+    # Tipo desconocido o unknown_transformation
     else:
-        print(f"⚠️ Tipo de transformación desconocido: {trans_type}")
-        return None
+        print(f"⚠️ Tipo de transformación desconocido: {trans_type} en step '{step_name}'")
+        
+        # Intentar inferir el tipo de nodo basándonos en el nombre del step
+        step_lower = step_name.lower()
+        
+        if "binner" in step_lower or "bin" in step_lower:
+            print(f"   → Inferido como 'Numeric Binner' por el nombre del step")
+            # Bins hardcodeados en formato KNIME
+            default_bins = [{
+                "binName": "default_bin",
+                "closureType": "openClosed",
+                "leftMargin": "-Infinity",
+                "rightMargin": "Infinity"
+            }]
+            return {
+                "id": node_id,
+                "node_name": "Numeric Binner",
+                "node_type": "org.knime.base.node.preproc.binner.BinnerNodeFactory",
+                "parameters": {
+                    "bins": default_bins,
+                    "in_columns": [],
+                    "out_columns": []
+                }
+            }
+        elif "outlier" in step_lower:
+            print(f"   → Inferido como 'Numeric Outliers' por el nombre del step")
+            return {
+                "id": node_id,
+                "node_name": "Numeric Outliers",
+                "node_type": "org.knime.base.node.stats.outlier.handler.NumericOutliersNodeFactory",
+                "parameters": {
+                    "in_columns": [],
+                    "out_columns": []
+                }
+            }
+        elif "missing" in step_lower or "impute" in step_lower:
+            print(f"   → Inferido como 'Missing Value' por el nombre del step")
+            return {
+                "id": node_id,
+                "node_name": "Missing Value",
+                "node_type": "org.knime.base.node.preproc.pmml.missingval.compute.MissingValueHandlerNodeFactory",
+                "parameters": {
+                    "method": "other",
+                    "imputationType": "Mean",  # Hardcoded por defecto
+                    "fixStringValues": [],  # Hardcoded
+                    "in_columns": [],
+                    "out_columns": []
+                }
+            }
+        else:
+            print(f"   → No se pudo inferir el tipo de nodo")
+            return None
 
 
 def extract_contracts_from_steps(steps, step_to_id):
@@ -395,10 +582,10 @@ def parse_xtext_contract(name, contract_type, body):
 def main():
     # ========== CONFIGURACIÓN ==========
     # Nombre del archivo (sin extensión .json)
-    workflow_name = "StudentDataPipeline"
+    workflow_name = "Model Data Set"
     
     # Carpeta de entrada donde está el archivo JSON de Xtext
-    input_folder = "parsed_json_workflows/StudentDataPipeline"
+    input_folder = "parsed_json_workflows/Model Data Set"
     
     output_folder = f"{input_folder}_knime"
     

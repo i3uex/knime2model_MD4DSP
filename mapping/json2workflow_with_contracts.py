@@ -1,23 +1,118 @@
 import os
+import sys
 import json
 from string import Template
+
+# Add parent directory to path to import utils
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from utils.json_parser_functions import get_transformation_dp_values
 from utils.library_functions import get_library_transformation_name, get_library_transformation_names
 from jinja2 import Template as JinjaTemplate
 from utils.logger import print_and_log
 
 
+
+def _parse_single_contract(contract, contract_type, column_name):
+    """
+    Parsea un único contrato y lo convierte al formato esperado.
+    
+    Args:
+        contract (dict): El contrato a parsear
+        contract_type (str): PRECONDITION, POSTCONDITION, INVARIANT
+        column_name (str): Nombre de la columna
+    
+    Returns:
+        dict: Contrato parseado
+    """
+    # Detectar si el contrato tiene "type" directamente o "contract_type"
+    contract_kind = contract.get("type", contract.get("contract_type", "value_range"))
+    name = contract.get("name", "")
+    
+    # Crear estructura base del contrato
+    parsed_contract = {
+        "type": contract_kind,
+        "name": name,
+        "column": column_name,
+    }
+    
+    # Parsear detalles según el tipo de contrato
+    # Si hay un objeto "details", usar ese; si no, usar el contrato directamente
+    details = contract.get("details", contract)
+    
+    if contract_kind == "value_range":
+        parsed_contract.update({
+            "check": details.get("check", ""),
+            "target_type": details.get("target_type", ""),
+            "belong_op": details.get("belong_op", ""),
+            "field": "input" if contract_type == "PRECONDITION" else "output"
+        })
+    
+    elif contract_kind == "condition":
+        if_clause = details.get("if", {})
+        then_clause = details.get("then", {})
+        parsed_contract.update({
+            "if": {
+                "condition_type": if_clause.get("condition_type", "special_value"),
+                "belong_op": if_clause.get("belong_op", "NOTBELONG"),
+                "target_type": if_clause.get("target_type", "")
+            },
+            "then": {
+                "result_type": then_clause.get("result_type", "special_value"),
+                "belong_op": then_clause.get("belong_op", "NOTBELONG"),
+                "target_type": then_clause.get("target_type", "")
+            }
+        })
+    
+    elif contract_kind == "field_range":
+        parsed_contract.update({
+            "belong_op": details.get("belong_op", "BELONG"),
+            "fields": details.get("fields", [])
+        })
+    
+    return parsed_contract
+
+
 def parse_contracts_from_json(node, node_id):
     """
-    Parsea los contratos desde el JSON del nodo y los convierte al formato
-    esperado por los templates XMI.
+    Parsea los contratos desde el JSON del nodo y los convierte al formato esperado por los templates XMI.
+    
+    Formato JSON esperado (opción 1 - por columnas):
+    {
+      "contracts": {
+        "node_id": {
+          "columns": {
+            "column_name": {
+              "preconditions": [...],
+              "postconditions": [...],
+              "invariants": [...]
+            }
+          }
+        }
+      }
+    }
+    
+    Formato JSON esperado (opción 2 - lista):
+    {
+      "contracts": {
+        "node_id": [
+          {
+            "column": "column_name",
+            "type": "PRECONDITION" | "POSTCONDITION" | "INVARIANT",
+            "contract_type": "value_range" | "condition" | "field_range",
+            "name": "nombre_contrato",
+            "details": {...}
+          }
+        ]
+      }
+    }
     
     Args:
         node (dict): El nodo del JSON que contiene los contratos
         node_id (int): El ID del nodo
     
     Returns:
-        dict: Contratos organizados por tipo (preconditions, postconditions, invariants)
+        dict: Contratos organizados por tipo y columna
     """
     contracts = node.get("contracts", {})
     
@@ -27,51 +122,92 @@ def parse_contracts_from_json(node, node_id):
     parsed_contracts = {
         "preconditions": [],
         "postconditions": [],
-        "invariants": []
+        "invariants": [],
+        "by_column": {}  # Contratos organizados por columna
     }
     
-    # Obtener contratos del nodo específico (formato: {"node_id": {...}})
+    # Obtener contratos del nodo específico
     node_contracts = contracts.get(str(node_id), {})
     
     if not node_contracts:
         return None
     
-    # Procesar precondiciones
-    for pre in node_contracts.get("preconditions", []):
-        parsed_pre = {
-            "name": pre.get("name", ""),
-            "type": pre.get("type", ""),
-            "field": pre.get("field", "input"),
-            "column": pre.get("column", ""),
-            "check": pre.get("check", ""),
-            "target_type": pre.get("target_type", ""),
-            "operator": pre.get("operator", ""),
-            "value": pre.get("value", "")
-        }
-        parsed_contracts["preconditions"].append(parsed_pre)
+    # Detectar formato: si es dict con "columns", usar formato 1; si es lista, usar formato 2
+    if isinstance(node_contracts, dict) and "columns" in node_contracts:
+        # FORMATO 1: Por columnas
+        columns_contracts = node_contracts.get("columns", {})
+        
+        for column_name, column_data in columns_contracts.items():
+            if column_name not in parsed_contracts["by_column"]:
+                parsed_contracts["by_column"][column_name] = {
+                    "column_name": column_name,
+                    "preconditions": [],
+                    "postconditions": [],
+                    "invariants": []
+                }
+            
+            # Procesar preconditions
+            for contract in column_data.get("preconditions", []):
+                parsed_contract = _parse_single_contract(contract, "PRECONDITION", column_name)
+                parsed_contracts["preconditions"].append(parsed_contract)
+                parsed_contracts["by_column"][column_name]["preconditions"].append(parsed_contract)
+            
+            # Procesar postconditions
+            for contract in column_data.get("postconditions", []):
+                parsed_contract = _parse_single_contract(contract, "POSTCONDITION", column_name)
+                parsed_contracts["postconditions"].append(parsed_contract)
+                parsed_contracts["by_column"][column_name]["postconditions"].append(parsed_contract)
+            
+            # Procesar invariants
+            for contract in column_data.get("invariants", []):
+                parsed_contract = _parse_single_contract(contract, "INVARIANT", column_name)
+                parsed_contracts["invariants"].append(parsed_contract)
+                parsed_contracts["by_column"][column_name]["invariants"].append(parsed_contract)
     
-    # Procesar postcondiciones
-    for post in node_contracts.get("postconditions", []):
-        parsed_post = {
-            "name": post.get("name", ""),
-            "type": post.get("type", ""),
-            "field": post.get("field", "output"),
-            "column": post.get("column", ""),
-            "check": post.get("check", ""),
-            "target_type": post.get("target_type", ""),
-            "operator": post.get("operator", ""),
-            "value": post.get("value", "")
-        }
-        parsed_contracts["postconditions"].append(parsed_post)
-    
-    # Procesar invariantes
-    for inv in node_contracts.get("invariants", []):
-        parsed_inv = {
-            "name": inv.get("name", ""),
-            "type": inv.get("type", ""),
-            "condition": inv.get("condition", {})
-        }
-        parsed_contracts["invariants"].append(parsed_inv)
+    elif isinstance(node_contracts, list):
+        # FORMATO 2: Lista de contratos
+        for contract in node_contracts:
+            # El tipo puede venir en "type" (formato nuevo) o inferirse del contexto
+            contract_type = contract.get("type", "")  # PRECONDITION, POSTCONDITION, INVARIANT
+            column = contract.get("column", "")  # Nombre de la columna (opcional)
+            
+            # Si el contrato tiene "details", extraer el tipo de contrato de ahí
+            if "contract_type" in contract:
+                # Formato: {type: "PRECONDITION", contract_type: "value_range", details: {...}}
+                parsed_contract = _parse_single_contract(
+                    {"type": contract["contract_type"], "name": contract.get("name", ""), 
+                     "details": contract.get("details", {})}, 
+                    contract_type, 
+                    column
+                )
+            else:
+                # Formato antiguo: el contrato directamente tiene los campos
+                parsed_contract = _parse_single_contract(contract, contract_type, column)
+            
+            # Agregar a la lista correspondiente
+            if contract_type == "PRECONDITION":
+                parsed_contracts["preconditions"].append(parsed_contract)
+            elif contract_type == "POSTCONDITION":
+                parsed_contracts["postconditions"].append(parsed_contract)
+            elif contract_type == "INVARIANT":
+                parsed_contracts["invariants"].append(parsed_contract)
+            
+            # También organizarlo por columna si se especificó
+            if column:
+                if column not in parsed_contracts["by_column"]:
+                    parsed_contracts["by_column"][column] = {
+                        "column_name": column,
+                        "preconditions": [],
+                        "postconditions": [],
+                        "invariants": []
+                    }
+                
+                if contract_type == "PRECONDITION":
+                    parsed_contracts["by_column"][column]["preconditions"].append(parsed_contract)
+                elif contract_type == "POSTCONDITION":
+                    parsed_contracts["by_column"][column]["postconditions"].append(parsed_contract)
+                elif contract_type == "INVARIANT":
+                    parsed_contracts["by_column"][column]["invariants"].append(parsed_contract)
     
     # Si no hay contratos, retornar None
     if (not parsed_contracts["preconditions"] and 
@@ -407,21 +543,47 @@ def json_to_xmi_workflow_with_templates(json_input_folder: str, workflow_filenam
 
 
 if __name__ == "__main__":
-    # Example usage
-    # Parameter to change for the json workflow to convert
-    workflow_filename = "StudentDataPipeline_knime"
+    if len(sys.argv) == 3:
+        # Command line mode: python script.py <input_json> <output_xmi>
+        json_filepath = sys.argv[1]
+        xmi_output_filepath = sys.argv[2]
+        
+        print("="*60)
+        print("JSON2WORKFLOW WITH CONTRACTS FROM JSON")
+        print("="*60)
+        print(f"Input JSON: {json_filepath}")
+        print(f"Output XMI: {xmi_output_filepath}")
+        print("="*60)
+        
+        # Extract filename without extension
+        workflow_filename = os.path.splitext(os.path.basename(json_filepath))[0]
+        json_input_folder = os.path.dirname(json_filepath)
+        xmi_output_folder = os.path.dirname(xmi_output_filepath)
+        
+        mapped_nodes, nodes_cont, mapped_nodes_info = json_to_xmi_workflow_with_templates(
+            json_input_folder, workflow_filename, xmi_output_folder, include_contracts=True)
+        
+        print("\n" + "="*60)
+        print(f"✅ Mapped nodes: {mapped_nodes}/{nodes_cont}")
+        print("Mapping details:", mapped_nodes_info)
+        print(f"✅ XMI generated: {xmi_output_filepath}")
+        print("="*60)
+    else:
+        # Example usage
+        # Parameter to change for the json workflow to convert
+        workflow_filename = "Model data set with metanode_with_contracts"
 
-    json_input_folder = "parsed_json_workflows"
-    xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
+        json_input_folder = "parsed_json_workflows"
+        xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
 
-    print("="*60)
-    print("JSON2WORKFLOW WITH CONTRACTS FROM JSON")
-    print("="*60)
-    
-    mapped_nodes, nodes_cont, mapped_nodes_info = json_to_xmi_workflow_with_templates(
-        json_input_folder, workflow_filename, xmi_output_folder, include_contracts=True)
+        print("="*60)
+        print("JSON2WORKFLOW WITH CONTRACTS FROM JSON")
+        print("="*60)
+        
+        mapped_nodes, nodes_cont, mapped_nodes_info = json_to_xmi_workflow_with_templates(
+            json_input_folder, workflow_filename, xmi_output_folder, include_contracts=True)
 
-    print("\n" + "="*60)
-    print(f"✅ Mapped nodes: {mapped_nodes}/{nodes_cont}")
-    print("Mapping details:", mapped_nodes_info)
-    print("="*60)
+        print("\n" + "="*60)
+        print(f"✅ Mapped nodes: {mapped_nodes}/{nodes_cont}")
+        print("Mapping details:", mapped_nodes_info)
+        print("="*60)
