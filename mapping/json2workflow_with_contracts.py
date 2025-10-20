@@ -571,7 +571,7 @@ if __name__ == "__main__":
     else:
         # Example usage
         # Parameter to change for the json workflow to convert
-        workflow_filename = "Model data set with metanode_with_contracts"
+        workflow_filename = "ModelDataSet"
 
         json_input_folder = "parsed_json_workflows"
         xmi_output_folder = f"parsed_xmi_workflows/{workflow_filename}"
