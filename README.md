@@ -288,6 +288,7 @@ knime2model_MD4DSP/
 - **`TODO.md`**: file that contains the pending tasks of the project.
 
 ## Authors
+- Francisco Javier Melchor González
 - Carlos Breuer Carrasco
 - Carlos Cambero Rojas
 
