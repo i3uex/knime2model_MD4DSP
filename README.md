@@ -6,9 +6,9 @@ This project aims to map a KNIME workflow (`.knwf`) to a MD4DSP workflow (`.xmi`
 
 The project is divided into three main scripts:
 
-1. **`parsers/knwf2json.py`**: script that parses a KNIME workflow and exports the data to JSON intermediate file.
-2. **`parsers/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow.
-3. **`parsers/knwf2workflow.py`**: script that combines the previous two scripts to parse a KNIME workflow and export the data to a MD4DSP Workflow instance.
+1. **`mapping/knwf2json.py`**: script that parses a KNIME workflow and exports the data to JSON intermediate file.
+2. **`mapping/json2workflow.py`**: script that parses the intermediate JSON file and exports the data to a MD4DSP workflow.
+3. **`mapping/knwf2workflow.py`**: script that combines the previous two scripts to parse a KNIME workflow and export the data to a MD4DSP Workflow instance.
 ## Prerequisites
 
 - Anaconda Environment
